@@ -1,0 +1,233 @@
+[
+  {
+    "id": 1,
+    "timestamp": "2026-09-20T12:15:56",
+    "goal": "open YouTube for GTA V",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Opened youtube."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Searching YouTube for youtube gta v."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "timestamp": "2026-09-20T12:17:41",
+    "goal": "Nexus open YouTube and search GTA V",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Opened youtube."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Searching YouTube for youtube gta v."
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "timestamp": "2026-09-20T12:45:47",
+    "goal": "Nexus open YouTube and search GTA V",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Opened youtube."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Searching YouTube for youtube gta v."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "timestamp": "2026-09-22T14:23:46",
+    "goal": "hello Nexus open YouTube and search GTA V",
+    "status": "FAILED",
+    "completed": 1,
+    "total": 2,
+    "percentage": 50,
+    "steps": [
+      {
+        "id": 1,
+        "status": "FAILED",
+        "result": "Not an executable command."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Searching Google for gta v."
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "timestamp": "2026-09-24T15:06:53",
+    "goal": "what is the latest news about AI",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Opened https://news google com."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Text typed."
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "timestamp": "2026-09-25T14:47:08",
+    "goal": "open YouTube and search latest news about AI",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Opened youtube."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Searching YouTube for youtube latest news about ai."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "timestamp": "2026-09-25T14:51:03",
+    "goal": "Nexus open car xyz and then open Notepad",
+    "status": "FAILED",
+    "completed": 0,
+    "total": 2,
+    "percentage": 0,
+    "steps": [
+      {
+        "id": 1,
+        "status": "FAILED",
+        "result": "I don't know how to open car xyz yet."
+      },
+      {
+        "id": 2,
+        "status": "FAILED",
+        "result": "Not an executable command."
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "timestamp": "2026-09-25T15:08:07",
+    "goal": "Nexus open car xyz and then open Notepad",
+    "status": "FAILED",
+    "completed": 1,
+    "total": 2,
+    "percentage": 50,
+    "steps": [
+      {
+        "id": 1,
+        "status": "FAILED",
+        "result": "I don't know how to open car xyz yet."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Opened notepad."
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "timestamp": "2026-09-25T15:35:59",
+    "goal": "Nexus open Notepad and type hello Nexus",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Opened notepad."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Text typed."
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "timestamp": "2026-09-25T21:27:02",
+    "goal": "open Notepad and type hello Nexus",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Opened notepad."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Text typed."
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "timestamp": "2026-09-25T21:30:11",
+    "goal": "explain what artificial intelligence in two sentence",
+    "status": "COMPLETED",
+    "completed": 2,
+    "total": 2,
+    "percentage": 100,
+    "steps": [
+      {
+        "id": 1,
+        "status": "COMPLETE",
+        "result": "Searching Google for artificial intelligence definition."
+      },
+      {
+        "id": 2,
+        "status": "COMPLETE",
+        "result": "Screenshot saved as nexus_screenshot.png."
+      }
+    ]
+  }
+]
