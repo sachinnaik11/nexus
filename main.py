@@ -2591,7 +2591,7 @@ def voice_loop():
             # AGENT PLANNER
             # =================================================
 
-            planner_decision = make_decision(user_input)
+            planner_decision = brain_analysis["decision"]
 
             plan = create_plan(user_input)
 
@@ -2770,9 +2770,7 @@ def voice_loop():
             # SINGLE DECISION
             # =================================================
 
-            decision = make_decision(
-                user_input
-            )
+            decision = brain_analysis["decision"]
 
             print(
                 f"NEXUS DECISION: "
