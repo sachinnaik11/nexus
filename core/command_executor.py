@@ -425,6 +425,10 @@ def execute_command(command_type, target=None):
         res = set_everything_up()
         return res.get("spoken_reply", "Workspace setup complete, boss.")
 
+    if command_type == "SYSTEM_DIAGNOSTICS":
+        from core.diagnostics import run_system_diagnostics
+        return run_system_diagnostics()
+
     # --------------------------------------------------------
     # UNKNOWN COMMAND
     # --------------------------------------------------------

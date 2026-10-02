@@ -561,7 +561,10 @@ def verify_command_result(
             "reason": "No result was returned.",
         }
 
-    result_text = str(result).strip()
+    if isinstance(result, dict):
+        result_text = str(result.get("spoken") or result.get("display") or result).strip()
+    else:
+        result_text = str(result).strip()
     lower = result_text.lower()
 
     failure_phrases = (
@@ -598,6 +601,17 @@ def verify_command_result(
         "muted",
         "screenshot saved",
         "saved",
+        "diagnostic",
+        "diagnostics",
+        "hardware",
+        "optimal",
+        "nominal",
+        "complete",
+        "telemetry",
+        "workspace setup complete",
+        "storyboard",
+        "screen vision",
+        "observing",
     )
 
     if any(
@@ -1575,18 +1589,28 @@ def respond(result):
 
         return
 
+    display_text = ""
+    spoken_text = ""
+
+    if isinstance(result, dict):
+        display_text = str(result.get("display") or result.get("spoken") or result)
+        spoken_text = str(result.get("spoken") or result.get("display") or result)
+    else:
+        display_text = str(result)
+        spoken_text = str(result)
+
     print(
-        f"NEXUS: {result}"
+        f"NEXUS: {spoken_text}"
     )
 
     window.response_signal.emit(
-        result
+        display_text
     )
 
     try:
 
         with speak_lock:
-            speak(result)
+            speak(spoken_text)
 
     except Exception as e:
 

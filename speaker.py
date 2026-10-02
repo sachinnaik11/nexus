@@ -9,6 +9,8 @@ import asyncio
 import tempfile
 import threading
 
+import re
+
 # Optional neural edge-tts
 try:
     import edge_tts
@@ -83,15 +85,20 @@ def speak(text: str, wait: bool = True):
     if not text or not str(text).strip():
         return
 
-    text = str(text).strip()
+    # Strip HTML tags and entities so voice synthesis sounds clean and human
+    clean_text = re.sub(r"<[^>]+>", " ", str(text))
+    clean_text = re.sub(r"&[a-zA-Z0-9#]+;", " ", clean_text)
+    clean_text = re.sub(r"\s+", " ", clean_text).strip()
+    if not clean_text:
+        return
 
     def _worker():
         with _speech_lock:
             success = False
             if HAS_EDGE_TTS:
-                success = _speak_edge(text)
+                success = _speak_edge(clean_text)
             if not success:
-                _speak_offline(text)
+                _speak_offline(clean_text)
 
     if wait:
         _worker()

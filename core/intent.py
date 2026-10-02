@@ -278,6 +278,20 @@ def detect_intent(text):
         "add details",
         "add video details",
         "update video details",
+        "diagnose",
+        "run diagnostic",
+        "run diagnostics",
+        "system diagnostic",
+        "system diagnostics",
+        "check system health",
+        "check health",
+        "system health",
+        "pc diagnostics",
+        "laptop diagnostics",
+        "check laptop",
+        "check pc",
+        "hardware diagnostics",
+        "diagnostics",
     )
 
     if command.startswith(

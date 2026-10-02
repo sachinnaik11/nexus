@@ -81,6 +81,14 @@ class NexusCloudHandler(BaseHTTPRequestHandler):
             })
             return
 
+        if path == "/api/diagnostics":
+            from core.diagnostics import get_system_telemetry
+            self._send_json(200, {
+                "service": "NEXUS Telemetry Node",
+                "diagnostics": get_system_telemetry()
+            })
+            return
+
         self._send_json(404, {"error": "Endpoint not found"})
 
     def do_POST(self):

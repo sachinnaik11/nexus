@@ -258,6 +258,40 @@ def classify_command(text):
     ):
         return "WORKSPACE_SETUP"
 
+    if (
+        command in (
+            "diagnose my laptop",
+            "diagnose laptop",
+            "diagnose pc",
+            "diagnose my pc",
+            "diagnose computer",
+            "diagnose system",
+            "run diagnostics",
+            "run diagnostic",
+            "system diagnostics",
+            "system diagnostic",
+            "run system diagnostics",
+            "check system health",
+            "system health",
+            "laptop diagnostics",
+            "hardware diagnostics",
+            "pc diagnostics",
+            "check laptop health",
+            "check pc health",
+            "check laptop",
+            "check pc",
+            "diagnostics",
+            "diagnostic",
+            "diagnose",
+            "health check",
+            "hardware status",
+        )
+        or command.startswith("diagnose ")
+        or command.startswith("run diagnostics")
+        or command.startswith("run diagnostic")
+    ):
+        return "SYSTEM_DIAGNOSTICS"
+
     if command.startswith("open on phone ") or command.startswith("open phone app "):
 
         return "PHONE_OPEN_APP"

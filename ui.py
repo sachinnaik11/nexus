@@ -4,6 +4,7 @@
 
 import sys
 import os
+import re
 import math
 import threading
 import webbrowser
@@ -745,10 +746,16 @@ class NexusUI(QWidget):
         btn_work.setToolTip("One-click autonomous workspace macro: opens tabs, folders, and workspace")
         btn_work.clicked.connect(lambda: self._send_quick_command("set everything up"))
 
+        btn_diag = QPushButton("🩺 DIAGNOSE LAPTOP")
+        btn_diag.setProperty("class", "dockControlBtn")
+        btn_diag.setToolTip("Runs complete hardware & thermal diagnostics on CPU, RTX 4050, and memory")
+        btn_diag.clicked.connect(lambda: self._send_quick_command("diagnose my laptop"))
+
         ctrl_layout.addWidget(btn_see)
         ctrl_layout.addWidget(btn_cam)
         ctrl_layout.addWidget(btn_ad)
         ctrl_layout.addWidget(btn_work)
+        ctrl_layout.addWidget(btn_diag)
 
         core_layout.addWidget(ctrl_box)
         center_row.addWidget(core_panel)
@@ -2176,7 +2183,14 @@ class NexusUI(QWidget):
             f"</div>"
         )
         self.chat_browser.append(entry)
-        self.command.setText("NEXUS: " + text)
+
+        # Clean plain text for subtitle display under the core
+        plain = re.sub(r"<[^>]+>", " ", str(text))
+        plain = re.sub(r"&[a-zA-Z0-9#]+;", " ", plain)
+        plain = re.sub(r"\s+", " ", plain).strip()
+        if len(plain) > 85:
+            plain = plain[:82] + "..."
+        self.command.setText("NEXUS: " + (plain or "Ready"))
 
         # Refresh memory tab if memories changed
         self._refresh_memory_view()

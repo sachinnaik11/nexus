@@ -48,6 +48,7 @@ CAPABILITIES = {
         "CINEMATIC_AD",
         "SCREEN_WHAT_DO_YOU_SEE",
         "WORKSPACE_SETUP",
+        "SYSTEM_DIAGNOSTICS",
     ],
 
     CAPABILITY_PHONE: [
