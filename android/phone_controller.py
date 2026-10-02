@@ -140,15 +140,19 @@ class PhoneController:
         return any(d.get("status") == "device" for d in devices)
 
     def get_device_wifi_ip(self) -> Optional[str]:
-        """Auto-detect phone Wi-Fi IP address from ADB shell."""
+        """Auto-detect phone Wi-Fi IP address from ADB shell across all interfaces."""
+        # Method 1: ip -4 addr show across all network interfaces
         try:
-            res = self._run_adb(["shell", "ip", "-f", "inet", "addr", "show", "wlan0"])
-            m = re.search(r"inet\s+(\d+\.\d+\.\d+\.\d+)", res.stdout)
-            if m:
-                return m.group(1)
+            res = self._run_adb(["shell", "ip", "-4", "addr", "show"])
+            for line in res.stdout.splitlines():
+                if "inet " in line and "127.0.0.1" not in line:
+                    m = re.search(r"inet\s+(\d+\.\d+\.\d+\.\d+)", line)
+                    if m:
+                        return m.group(1)
         except Exception:
             pass
 
+        # Method 2: ip route
         try:
             res = self._run_adb(["shell", "ip", "route"])
             m = re.search(r"src\s+(\d+\.\d+\.\d+\.\d+)", res.stdout)
@@ -157,13 +161,15 @@ class PhoneController:
         except Exception:
             pass
 
-        try:
-            res = self._run_adb(["shell", "getprop", "dhcp.wlan0.ipaddress"])
-            ip = res.stdout.strip()
-            if re.match(r"^\d+\.\d+\.\d+\.\d+$", ip):
-                return ip
-        except Exception:
-            pass
+        # Method 3: DHCP properties
+        for prop in ["dhcp.wlan0.ipaddress", "dhcp.wlan1.ipaddress", "dhcp.eth0.ipaddress"]:
+            try:
+                res = self._run_adb(["shell", "getprop", prop])
+                ip = res.stdout.strip()
+                if re.match(r"^\d+\.\d+\.\d+\.\d+$", ip) and ip != "127.0.0.1":
+                    return ip
+            except Exception:
+                pass
 
         return None
 
