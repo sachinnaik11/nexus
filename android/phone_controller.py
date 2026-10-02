@@ -139,11 +139,53 @@ class PhoneController:
         devices = self.list_devices()
         return any(d.get("status") == "device" for d in devices)
 
+    def get_device_wifi_ip(self) -> Optional[str]:
+        """Auto-detect phone Wi-Fi IP address from ADB shell."""
+        try:
+            res = self._run_adb(["shell", "ip", "-f", "inet", "addr", "show", "wlan0"])
+            m = re.search(r"inet\s+(\d+\.\d+\.\d+\.\d+)", res.stdout)
+            if m:
+                return m.group(1)
+        except Exception:
+            pass
+
+        try:
+            res = self._run_adb(["shell", "ip", "route"])
+            m = re.search(r"src\s+(\d+\.\d+\.\d+\.\d+)", res.stdout)
+            if m:
+                return m.group(1)
+        except Exception:
+            pass
+
+        try:
+            res = self._run_adb(["shell", "getprop", "dhcp.wlan0.ipaddress"])
+            ip = res.stdout.strip()
+            if re.match(r"^\d+\.\d+\.\d+\.\d+$", ip):
+                return ip
+        except Exception:
+            pass
+
+        return None
+
     def connect_wireless(self, target: str) -> str:
-        """Connect to Android phone over Wi-Fi (e.g. 192.168.1.5 or 192.168.1.5:5555)."""
-        clean_target = str(target).strip()
-        if not clean_target:
-            return "Please provide an IP address, e.g. 'connect phone 192.168.1.5:5555'."
+        """Connect to Android phone over Wi-Fi (e.g. 192.168.1.5:5555)."""
+        clean_target = str(target or "").strip()
+
+        # If user passed placeholder like '192.168.1.X'
+        if not clean_target or "x" in clean_target.lower():
+            return (
+                "[WIRELESS PHONE SETUP]\n\n"
+                "Notice: '192.168.1.X' is just an example template.\n\n"
+                "EASIEST WAY (100% Automatic):\n"
+                "1. Plug your phone into your laptop via USB cable.\n"
+                "2. Tap 'Allow' on your phone screen.\n"
+                "3. Click 'Enable Wireless' in NEXUS (or say 'enable wireless phone').\n"
+                "   NEXUS will find your real IP and connect automatically, then you can unplug!\n\n"
+                "MANUAL WAY:\n"
+                "Check your phone's real IP in: Settings > About Phone > Status Information > IP address,\n"
+                "then say: 'connect phone <your_real_ip>:5555'."
+            )
+
         if ":" not in clean_target:
             clean_target = f"{clean_target}:5555"
 
@@ -165,13 +207,57 @@ class PhoneController:
             return f"Failed to pair device: {e}"
 
     def enable_wireless_port(self, port: int = 5555) -> str:
-        """Configure ADB daemon on device to listen on Wi-Fi TCP port."""
+        """Configure ADB daemon on device to listen on Wi-Fi TCP port and auto-connect."""
+        devices = self.list_devices()
+        if not devices:
+            return (
+                "[PHONE NOT CONNECTED VIA USB]\n\n"
+                "To enable cable-free wireless control:\n"
+                "1. Plug your Android phone into the laptop with a USB cable.\n"
+                "2. Look at your phone screen: if it asks 'Allow USB debugging?', check 'Always allow' and tap 'Allow'.\n"
+                "3. Say 'enable wireless phone' again. NEXUS will detect your IP and switch to wireless mode automatically!"
+            )
+
+        # Check for unauthorized status
+        for d in devices:
+            if d.get("status") == "unauthorized":
+                return (
+                    "[ACTION REQUIRED ON PHONE SCREEN]\n\n"
+                    "Your phone is plugged in, but USB debugging is not yet authorized.\n\n"
+                    "Look at your phone screen right now!\n"
+                    "A popup has appeared asking: 'Allow USB debugging?'\n"
+                    "1. Check the box: [x] Always allow from this computer\n"
+                    "2. Tap: [ALLOW]\n\n"
+                    "Once you tap Allow, click 'Enable Wireless' again!"
+                )
+
+        # Auto-detect the phone's Wi-Fi IP
+        phone_ip = self.get_device_wifi_ip()
+
         try:
             res = self._run_adb(["tcpip", str(port)])
             out = (res.stdout + res.stderr).strip()
-            return f"Wireless ADB mode activated on port {port}. You can now unplug the USB cable! ({out})"
+
+            if phone_ip:
+                time.sleep(1)
+                conn_res = self._run_adb(["connect", f"{phone_ip}:{port}"])
+                conn_out = (conn_res.stdout + conn_res.stderr).strip()
+                return (
+                    f"[WIRELESS CONTROL ACTIVATED]\n\n"
+                    f"- Phone Wi-Fi IP: {phone_ip}\n"
+                    f"- Port: {port}\n"
+                    f"- Status: {conn_out}\n\n"
+                    f"SUCCESS: YOU CAN NOW UNPLUG THE USB CABLE!\n"
+                    f"Say 'control my mobile' or 'mirror phone' anytime to control your phone wirelessly."
+                )
+            else:
+                return (
+                    f"Wireless ADB activated on port {port}. ({out})\n"
+                    f"Ensure phone and PC are on the same Wi-Fi, check your phone's IP in Settings > About Phone > Status, "
+                    f"and say: 'connect phone <your_ip>:5555'."
+                )
         except Exception as e:
-            return f"Failed to enable wireless port: {e}"
+            return f"Failed to enable wireless mode: {e}"
 
     # ------------------------------------------------------------
     # SCREEN MIRRORING & LIVE PC CONTROL (SCRCPY)
@@ -179,14 +265,29 @@ class PhoneController:
 
     def mirror_screen(self, title: str = "NEXUS Mobile Command Center") -> str:
         """Launch scrcpy for live screen mirroring, touch, and keyboard control."""
+        devices = self.list_devices()
+
+        # Check for unauthorized devices
+        for d in devices:
+            if d.get("status") == "unauthorized":
+                return (
+                    "[ACTION REQUIRED ON PHONE SCREEN]\n\n"
+                    "Your phone is plugged in, but needs authorization.\n\n"
+                    "Look at your phone screen right now!\n"
+                    "A popup has appeared asking: 'Allow USB debugging?'\n"
+                    "1. Check the box: [x] Always allow from this computer\n"
+                    "2. Tap: [ALLOW]\n\n"
+                    "Once you tap Allow, say 'mirror phone' or 'control my mobile' again!"
+                )
+
         if not self.is_connected():
             return (
-                "📱 Android phone not connected.\n\n"
-                "To control your mobile screen directly on your laptop:\n"
+                "[PHONE NOT CONNECTED]\n\n"
+                "To control your mobile screen on your laptop:\n"
                 "1. Connect your phone via USB cable.\n"
                 "2. Turn on USB Debugging in Settings > Developer Options.\n"
                 "3. Tap 'Always allow from this computer' on your phone screen.\n\n"
-                "Or connect wirelessly: 'connect phone <ip>:5555'."
+                "Once connected, say 'mirror phone' or 'control my mobile'!"
             )
 
         scrcpy_path = self._discover_scrcpy()
