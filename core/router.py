@@ -219,7 +219,15 @@ def classify_command(text):
         "turn on camera",
         "start camera",
         "launch camera",
+        "show camera",
         "webcam",
+        "camera",
+        "open webcam",
+        "open the webcam",
+        "turn on webcam",
+        "start webcam",
+        "launch webcam",
+        "show webcam",
     ):
         return "CAMERA_OPEN"
 

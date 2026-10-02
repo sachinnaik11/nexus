@@ -152,7 +152,7 @@ def execute_capability(command_type, target=None):
     if capability is None:
         return "Capability not available."
 
-    if capability == CAPABILITY_PC:
+    if capability in (CAPABILITY_PC, CAPABILITY_PHONE, CAPABILITY_YOUTUBE):
         return execute_command(command_type, target)
 
     return None
