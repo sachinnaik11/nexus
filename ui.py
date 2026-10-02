@@ -656,14 +656,23 @@ class NexusUI(QWidget):
 
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(20, 0, 20, 0)
+        layout.setSpacing(14)
 
         self.status = QLabel("●  SYSTEM ONLINE")
         self.status.setObjectName("hudStatus")
 
-        model_badge = QLabel("HYBRID AI: GEMINI 3.5 + QWEN 8B")
+        self.telemetry_badge = QLabel("CPU: --% | RAM: --% | GPU: RTX 4050")
+        self.telemetry_badge.setStyleSheet(
+            "color: #38bdf8; font-family: 'Consolas', monospace; font-size: 11px; "
+            "background: rgba(15, 23, 42, 0.7); padding: 4px 10px; border-radius: 6px; "
+            "border: 1px solid rgba(56, 189, 248, 0.25);"
+        )
+
+        model_badge = QLabel("HYBRID AI: GEMINI 3.8 + RTX 4050")
         model_badge.setObjectName("hudModelBadge")
 
         layout.addWidget(self.status)
+        layout.addWidget(self.telemetry_badge)
         layout.addStretch()
         layout.addWidget(model_badge)
 
@@ -764,6 +773,76 @@ class NexusUI(QWidget):
         chat_layout.addWidget(feed_title)
         chat_layout.addWidget(self.chat_browser, 1)
         center_row.addWidget(chat_panel, 1)
+
+        # Rightmost Sidebar: JARVIS Cognitive Matrix & Live Telemetry (as seen in @dhaibuilds)
+        right_panel = QFrame()
+        right_panel.setProperty("class", "hudPanel")
+        right_panel.setFixedWidth(230)
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(12, 14, 12, 14)
+        right_layout.setSpacing(10)
+
+        right_title = QLabel("COGNITIVE MATRIX")
+        right_title.setProperty("class", "panelHeader")
+        right_layout.addWidget(right_title)
+
+        matrix_items = [
+            ("UNDERSTAND", "● ACTIVE", "#00e5ff"),
+            ("REASON", "● 60 FPS", "#38bdf8"),
+            ("EXECUTE", "● AUTONOMOUS", "#10b981"),
+            ("ADAPT", "● SELF-HEAL", "#a855f7"),
+        ]
+        for name, status, col in matrix_items:
+            row = QHBoxLayout()
+            lbl_name = QLabel(name)
+            lbl_name.setStyleSheet("color: #94a3b8; font-size: 11px; font-weight: bold;")
+            lbl_val = QLabel(status)
+            lbl_val.setStyleSheet(f"color: {col}; font-size: 10px; font-weight: bold; font-family: 'Consolas', monospace;")
+            row.addWidget(lbl_name)
+            row.addStretch()
+            row.addWidget(lbl_val)
+            right_layout.addLayout(row)
+
+        sep = QFrame()
+        sep.setFrameShape(QFrame.HLine)
+        sep.setStyleSheet("color: rgba(56, 189, 248, 0.2);")
+        right_layout.addWidget(sep)
+
+        telemetry_title = QLabel("HARDWARE GAUGES")
+        telemetry_title.setProperty("class", "panelHeader")
+        right_layout.addWidget(telemetry_title)
+
+        self.gauge_cpu = QLabel("CPU: --")
+        self.gauge_cpu.setStyleSheet("color: #7dd3fc; font-size: 11px; font-family: 'Consolas', monospace;")
+        self.gauge_ram = QLabel("RAM: --")
+        self.gauge_ram.setStyleSheet("color: #7dd3fc; font-size: 11px; font-family: 'Consolas', monospace;")
+        self.gauge_gpu = QLabel("GPU: RTX 4050")
+        self.gauge_gpu.setStyleSheet("color: #00e5ff; font-size: 11px; font-family: 'Consolas', monospace;")
+
+        right_layout.addWidget(self.gauge_cpu)
+        right_layout.addWidget(self.gauge_ram)
+        right_layout.addWidget(self.gauge_gpu)
+
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.HLine)
+        sep2.setStyleSheet("color: rgba(56, 189, 248, 0.2);")
+        right_layout.addWidget(sep2)
+
+        cloud_head = QLabel("24/7 CLOUD & PWA")
+        cloud_head.setProperty("class", "panelHeader")
+        right_layout.addWidget(cloud_head)
+
+        lbl_cloud_status = QLabel("● CLOUD NODE: ONLINE")
+        lbl_cloud_status.setStyleSheet("color: #10b981; font-size: 10px; font-weight: bold;")
+        lbl_pwa_link = QLabel("<a href='https://sachinnaik11.github.io/nexus/' style='color:#38bdf8; text-decoration:none;'>📱 Mobile PWA Live</a>")
+        lbl_pwa_link.setOpenExternalLinks(True)
+        lbl_pwa_link.setStyleSheet("font-size: 11px;")
+
+        right_layout.addWidget(lbl_cloud_status)
+        right_layout.addWidget(lbl_pwa_link)
+        right_layout.addStretch()
+
+        center_row.addWidget(right_panel)
 
         layout.addLayout(center_row, 1)
 
@@ -911,33 +990,61 @@ class NexusUI(QWidget):
         return page
 
     def _refresh_system_stats(self):
-        if not hasattr(self, "sys_info_browser"):
-            return
+        def worker():
+            cpu_val = psutil.cpu_percent() if psutil else 0
+            cpu_str = f"{cpu_val}%"
+            ram_val = 0
+            ram_str = "N/A"
+            if psutil:
+                try:
+                    ram = psutil.virtual_memory()
+                    ram_val = ram.percent
+                    ram_str = f"{ram.percent}% ({round(ram.used / (1024**3), 1)}GB / {round(ram.total / (1024**3), 1)}GB)"
+                except Exception:
+                    pass
 
-        cpu_str = "N/A"
-        ram_str = "N/A"
-        if psutil:
+            gpu_str = "RTX 4050: Ready"
             try:
-                cpu_str = f"{psutil.cpu_percent()}%"
-                ram = psutil.virtual_memory()
-                ram_str = f"{ram.percent}% ({round(ram.used / (1024**3), 1)}GB / {round(ram.total / (1024**3), 1)}GB)"
+                import subprocess
+                out = subprocess.check_output(
+                    ["nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits"],
+                    creationflags=0x08000000 if os.name == 'nt' else 0,
+                    timeout=1.0
+                ).decode().strip()
+                parts = [p.strip() for p in out.split(",")]
+                if len(parts) >= 2:
+                    gpu_str = f"RTX 4050: {parts[0]}% ({parts[1]}°C)"
             except Exception:
                 pass
 
-        html = f"""
-        <div style='font-size: 14px; font-weight: bold; color: #38bdf8; margin-bottom: 12px;'>TELEMETRY READINGS</div>
-        <table style='width: 100%; font-size: 13px; line-height: 2;'>
-            <tr><td style='color:#7dd3fc; width: 180px;'>CPU UTILIZATION:</td><td><b>{cpu_str}</b></td></tr>
-            <tr><td style='color:#7dd3fc;'>RAM UTILIZATION:</td><td><b>{ram_str}</b></td></tr>
-            <tr><td style='color:#7dd3fc;'>HOST OS:</td><td>Windows (PowerShell Native)</td></tr>
-            <tr><td style='color:#7dd3fc;'>PYTHON RUNTIME:</td><td>{sys.version.split()[0]}</td></tr>
-            <tr><td style='color:#7dd3fc;'>GEMINI CLOUD AI:</td><td>Connected (gemini-3.5-flash-lite)</td></tr>
-            <tr><td style='color:#7dd3fc;'>LOCAL OLLAMA AI:</td><td>Ready (qwen3:8b fallback)</td></tr>
-            <tr><td style='color:#7dd3fc;'>SPEECH RECOGNITION:</td><td>Multi-language (EN, HI, KN, TA)</td></tr>
-            <tr><td style='color:#7dd3fc;'>AUDIO TTS:</td><td>Offline pyttsx3 Engine</td></tr>
-        </table>
-        """
-        self.sys_info_browser.setHtml(html)
+            top_text = f"CPU: {cpu_str} | RAM: {ram_val}% | GPU: {gpu_str}"
+
+            if hasattr(self, "telemetry_badge"):
+                QMetaObject.invokeMethod(self.telemetry_badge, "setText", Qt.QueuedConnection, Q_ARG(str, top_text))
+            if hasattr(self, "gauge_cpu"):
+                QMetaObject.invokeMethod(self.gauge_cpu, "setText", Qt.QueuedConnection, Q_ARG(str, f"CPU: {cpu_str}"))
+            if hasattr(self, "gauge_ram"):
+                QMetaObject.invokeMethod(self.gauge_ram, "setText", Qt.QueuedConnection, Q_ARG(str, f"RAM: {ram_val}%"))
+            if hasattr(self, "gauge_gpu"):
+                QMetaObject.invokeMethod(self.gauge_gpu, "setText", Qt.QueuedConnection, Q_ARG(str, f"GPU: {gpu_str}"))
+
+            if hasattr(self, "sys_info_browser"):
+                html = f"""
+                <div style='font-size: 14px; font-weight: bold; color: #38bdf8; margin-bottom: 12px;'>TELEMETRY READINGS</div>
+                <table style='width: 100%; font-size: 13px; line-height: 2;'>
+                    <tr><td style='color:#7dd3fc; width: 180px;'>CPU UTILIZATION:</td><td><b>{cpu_str}</b></td></tr>
+                    <tr><td style='color:#7dd3fc;'>RAM UTILIZATION:</td><td><b>{ram_str}</b></td></tr>
+                    <tr><td style='color:#7dd3fc;'>DEDICATED GPU:</td><td><b>{gpu_str} (6GB VRAM)</b></td></tr>
+                    <tr><td style='color:#7dd3fc;'>HOST OS:</td><td>Windows 11 Native</td></tr>
+                    <tr><td style='color:#7dd3fc;'>PYTHON RUNTIME:</td><td>{sys.version.split()[0]}</td></tr>
+                    <tr><td style='color:#7dd3fc;'>GEMINI CLOUD AI:</td><td>Connected (gemini-3.8-flash)</td></tr>
+                    <tr><td style='color:#7dd3fc;'>LOCAL OLLAMA AI:</td><td>Ready (qwen3:8b on RTX 4050)</td></tr>
+                    <tr><td style='color:#7dd3fc;'>NEURAL SPEECH:</td><td>Microsoft Edge Neural TTS (en-GB-RyanNeural)</td></tr>
+                </table>
+                """
+                QMetaObject.invokeMethod(self.sys_info_browser, "setHtml", Qt.QueuedConnection, Q_ARG(str, html))
+
+        threading.Thread(target=worker, daemon=True).start()
 
     # --------------------------------------------------------
     # VIEW 5: SETTINGS VIEW
