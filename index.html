@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NEXUS JARVIS // AI Brain & Studio</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00f5ff">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050813;
+      --bg-card: rgba(12, 19, 36, 0.75);
+      --card-border: rgba(0, 245, 255, 0.22);
+      --card-border-glow: rgba(0, 245, 255, 0.5);
+      --cyan: #00f5ff;
+      --cyan-glow: 0 0 16px rgba(0, 245, 255, 0.45);
+      --purple: #a855f7;
+      --purple-glow: 0 0 16px rgba(168, 85, 247, 0.45);
+      --accent: #38bdf8;
+      --text: #f1f5f9;
+      --text-muted: #8496b0;
+      --green: #10b981;
+      --red: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: radial-gradient(circle at 50% 10%, #0d162d 0%, var(--bg) 75%);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Ambient cyber grid overlay */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top HUD Navigation Bar */
+    header {
+      position: relative;
+      z-index: 10;
+      background: rgba(8, 14, 28, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .brand-wrap { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .brand-logo {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #00f5ff, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-pulse {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: var(--cyan-glow);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.6; }
+    }
+    .status-badge {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(0, 245, 255, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 245, 255, 0.35);
+      letter-spacing: 0.5px;
+    }
+
+    .top-tools { display: flex; align-items: center; gap: 8px; }
+    .hud-btn-mini {
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .hud-btn-mini:hover, .hud-btn-mini:active {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.25);
+    }
+
+    /* Main Tab Navigation */
+    nav.tab-bar {
+      position: relative;
+      z-index: 10;
+      background: rgba(8, 14, 28, 0.65);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0, 245, 255, 0.15);
+      display: flex;
+      padding: 4px 8px;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    nav.tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex: 1;
+      min-width: 80px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: var(--cyan);
+      background: rgba(0, 245, 255, 0.12);
+      border: 1px solid rgba(0, 245, 255, 0.4);
+      box-shadow: inset 0 0 12px rgba(0, 245, 255, 0.15);
+    }
+
+    /* Pages Container */
+    main.viewport {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .tab-page {
+      display: none;
+      flex: 1;
+      height: 100%;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 14px;
+      gap: 12px;
+    }
+    .tab-page.active { display: flex; }
+
+    /* Glass Panels */
+    .hud-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.25s;
+    }
+    .hud-card:hover { border-color: var(--card-border-glow); }
+    .card-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Arc Reactor Visualizer Stage */
+    .reactor-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 8px 0;
+    }
+    #reactor-canvas {
+      width: 140px;
+      height: 140px;
+      filter: drop-shadow(0 0 15px rgba(0, 245, 255, 0.4));
+      cursor: pointer;
+    }
+
+    /* Chat Messages Box */
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 8px;
+      scroll-behavior: smooth;
+    }
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 88%;
+      animation: msgPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes msgPop {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .msg.user { align-self: flex-end; }
+    .msg.assistant { align-self: flex-start; max-width: 92%; }
+    .bubble {
+      padding: 11px 15px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      word-break: break-word;
+      user-select: text;
+    }
+    .msg.user .bubble {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #fff;
+      border-bottom-right-radius: 3px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+    .msg.assistant .bubble {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      border-bottom-left-radius: 3px;
+      color: #f8fafc;
+    }
+
+    /* Thinking Collapsible Box */
+    .thinking-box {
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      font-size: 0.82rem;
+    }
+    .thinking-header {
+      padding: 6px 10px;
+      color: #c4b5fd;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      background: rgba(168, 85, 247, 0.12);
+    }
+    .thinking-body {
+      padding: 8px 10px;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      display: none;
+      max-height: 180px;
+      overflow-y: auto;
+      user-select: text;
+      white-space: pre-wrap;
+    }
+
+    /* Chat Input Bar */
+    .chat-dock {
+      position: relative;
+      z-index: 10;
+      background: rgba(8, 14, 28, 0.9);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .dock-input {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 0.92rem;
+      padding: 11px 14px;
+      outline: none;
+      transition: all 0.2s;
+      user-select: text;
+    }
+    .dock-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 245, 255, 0.25);
+    }
+    .btn-action {
+      background: linear-gradient(135deg, #00f5ff, #0284c7);
+      color: #050813;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 800;
+      font-size: 0.92rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-action:hover {
+      box-shadow: 0 0 16px rgba(0, 245, 255, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-icon {
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 11px 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-icon.active {
+      color: var(--red);
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.15);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Camera Optics & Ad View */
+    .cam-wrapper {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #webcam-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #snapshot-canvas { display: none; }
+    .cam-reticle {
+      position: absolute;
+      inset: 20px;
+      border: 2px dashed rgba(0, 245, 255, 0.6);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cam-reticle::after {
+      content: "OPTICAL TARGET LOCK // 60 FPS";
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 1px;
+    }
+    .cam-controls { display: flex; gap: 8px; margin-top: 10px; }
+
+    /* Creator Studio Elements */
+    .pill-select {
+      display: flex;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .pill-opt {
+      flex: 1;
+      padding: 8px 10px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .pill-opt.active {
+      background: rgba(0, 245, 255, 0.15);
+      color: var(--cyan);
+      box-shadow: inset 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+
+    .output-area {
+      background: rgba(9, 14, 26, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: #e2e8f0;
+      user-select: text;
+      white-space: pre-wrap;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    /* Modal / PIN Authentication */
+    #lock-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(5, 8, 19, 0.95);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .lock-box {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.25);
+      border-radius: 18px;
+      padding: 26px 20px;
+      text-align: center;
+    }
+    .lock-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+    .pin-input {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--cyan);
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem;
+      letter-spacing: 8px;
+      text-align: center;
+      padding: 12px;
+      margin: 16px 0;
+      outline: none;
+    }
+    .pin-input:focus { border-color: var(--cyan); box-shadow: var(--cyan-glow); }
+
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+      body { max-width: 900px; margin: 0 auto; border-left: 1px solid var(--card-border); border-right: 1px solid var(--card-border); }
+      #reactor-canvas { width: 160px; height: 160px; }
+      .cam-wrapper { height: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top HUD Bar -->
+  <header>
+    <div class="brand-wrap" onclick="switchTab('terminal')">
+      <div class="brand-pulse"></div>
+      <div class="brand-logo">N E X U S</div>
+      <div class="status-badge">JARVIS 2.0</div>
+    </div>
+    <div class="top-tools">
+      <button class="hud-btn-mini" id="pwa-install-btn" style="display:none;">📲 Install</button>
+      <button class="hud-btn-mini" onclick="toggleAudio()"><span id="sound-icon">🔊</span></button>
+      <button class="hud-btn-mini" onclick="lockSystem()">🔒</button>
+    </div>
+  </header>
+
+  <!-- Main HUD Tab Bar -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('terminal')">💬 TERMINAL</button>
+    <button class="tab-btn" onclick="switchTab('optics')">📷 OPTICS & ADS</button>
+    <button class="tab-btn" onclick="switchTab('studio')">🎬 STUDIO</button>
+    <button class="tab-btn" onclick="switchTab('telemetry')">⚡ TELEMETRY</button>
+  </nav>
+
+  <!-- Multi-View Viewport -->
+  <main class="viewport">
+
+    <!-- TAB 1: TERMINAL & AI BRAIN -->
+    <section class="tab-page active" id="tab-terminal">
+      <!-- Arc Reactor Visualizer -->
+      <div class="reactor-container">
+        <canvas id="reactor-canvas" width="280" height="280"></canvas>
+      </div>
+
+      <!-- Live Chat Transcript -->
+      <div id="chat-box">
+        <div class="msg assistant">
+          <div class="bubble">
+            <b>J.A.R.V.I.S. Core Online:</b> Welcome, Sachin. Multimodal visual sensors and 24/7 cloud pipelines are engaged. Ready for your command.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: OPTICS & CINEMATIC ADS -->
+    <section class="tab-page" id="tab-optics">
+      <div class="hud-card">
+        <div class="card-title">
+          <span>OPTICAL TARGET SENSOR</span>
+          <span style="font-size:0.7rem; color:var(--cyan);">WEBCAM / MOBILE CAM</span>
+        </div>
+        <div class="cam-wrapper">
+          <video id="webcam-video" autoplay playsinline muted></video>
+          <canvas id="snapshot-canvas"></canvas>
+          <div class="cam-reticle"></div>
+        </div>
+        <div class="cam-controls">
+          <button class="btn-action" style="flex:1;" onclick="startCamera()">📷 Turn On Camera</button>
+          <button class="btn-action" style="flex:1; background:linear-gradient(135deg,#a855f7,#6366f1); color:#fff;" onclick="takeSnapshotAndGenerateAd()">🎬 Create Cinematic Ad</button>
+        </div>
+      </div>
+
+      <div class="hud-card" id="ad-result-card" style="display:none;">
+        <div class="card-title">CINEMATIC AD STORYBOARD & PROMPTS</div>
+        <div class="output-area" id="ad-output-text">Generating storyboard...</div>
+      </div>
+    </section>
+
+    <!-- TAB 3: CREATOR STUDIO -->
+    <section class="tab-page" id="tab-studio">
+      <div class="hud-card">
+        <div class="card-title">ACTIVE CHANNEL TARGET</div>
+        <div class="pill-select">
+          <div class="pill-opt active" id="pill-memes" onclick="selectChannel('memesworld21')">@memesworld21 (Memes)</div>
+          <div class="pill-opt" id="pill-fusion" onclick="selectChannel('FusionX_YT')">@FusionX_YT (Gaming/Tech)</div>
+        </div>
+
+        <input type="text" id="studio-topic-input" class="dock-input" style="width:100%; margin-bottom:10px;" placeholder="Video topic (e.g. Bro realized too late, GTA update, vegetarian cat)...">
+
+        <div style="display:flex; gap:8px;">
+          <button class="btn-action" style="flex:1;" onclick="generateStudioContent('viral_seo')">🚀 Viral SEO Package</button>
+          <button class="btn-action" style="flex:1; background:linear-gradient(135deg,#a855f7,#6366f1); color:#fff;" onclick="generateStudioContent('shorts_meme')">🎭 Shorts Meme Script</button>
+        </div>
+      </div>
+
+      <div class="hud-card" id="studio-result-card" style="display:none;">
+        <div class="card-title">
+          <span>GENERATED STUDIO OUTPUT</span>
+          <button class="hud-btn-mini" onclick="copyStudioOutput()">📋 Copy</button>
+        </div>
+        <div class="output-area" id="studio-output-text"></div>
+      </div>
+    </section>
+
+    <!-- TAB 4: TELEMETRY & CLOUD -->
+    <section class="tab-page" id="tab-telemetry">
+      <div class="hud-card">
+        <div class="card-title">SYSTEM TELEMETRY</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="background:rgba(15,23,42,0.8); padding:10px; border-radius:8px; border:1px solid var(--card-border);">
+            <div style="font-size:0.75rem; color:var(--text-muted);">24/7 CLOUD NODE</div>
+            <div style="font-size:1.1rem; font-weight:700; color:var(--cyan);" id="telemetry-node">CHECKING...</div>
+          </div>
+          <div style="background:rgba(15,23,42,0.8); padding:10px; border-radius:8px; border:1px solid var(--card-border);">
+            <div style="font-size:0.75rem; color:var(--text-muted);">API LATENCY</div>
+            <div style="font-size:1.1rem; font-weight:700; color:var(--green);" id="telemetry-ping">-- ms</div>
+          </div>
+          <div style="background:rgba(15,23,42,0.8); padding:10px; border-radius:8px; border:1px solid var(--card-border);">
+            <div style="font-size:0.75rem; color:var(--text-muted);">ACTIVE MODEL</div>
+            <div style="font-size:0.95rem; font-weight:700; color:#fff;">Gemini 3.8 Flash</div>
+          </div>
+          <div style="background:rgba(15,23,42,0.8); padding:10px; border-radius:8px; border:1px solid var(--card-border);">
+            <div style="font-size:0.75rem; color:var(--text-muted);">SECURITY CIPHER</div>
+            <div style="font-size:0.95rem; font-weight:700; color:var(--purple);">AES-256 GCM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-card">
+        <div class="card-title">DESKTOP SYNC & HEALTH</div>
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:12px;">
+          This mobile app communicates directly with Google Cloud servers. Your laptop can be completely off or lid closed, and NEXUS will continue to assist you.
+        </p>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-action" style="flex:1;" onclick="testCloudPing()">⚡ Ping Cloud Node</button>
+          <button class="btn-action" style="flex:1; background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;" onclick="lockSystem()">🔒 Reset Auth Key</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Command Dock (Always visible for Terminal) -->
+  <div class="chat-dock" id="bottom-dock">
+    <input type="text" id="prompt-input" class="dock-input" placeholder="Ask or command JARVIS (e.g. 'what is on my screen', 'create a cinematic ad')..." onkeydown="if(event.key==='Enter')sendMessage()">
+    <button class="btn-icon" id="mic-btn" onclick="toggleVoiceInput()" title="Voice Dictation">🎙️</button>
+    <button class="btn-action" id="send-btn" onclick="sendMessage()">SEND ↵</button>
+  </div>
+
+  <!-- Security PIN Modal -->
+  <div id="lock-modal">
+    <div class="lock-box">
+      <div class="lock-title">NEXUS SECURE GATE</div>
+      <p style="color:var(--text-muted); font-size:0.85rem;">Enter your 4-digit Master PIN to unlock 24/7 Cloud Assistant.</p>
+      <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="••••" onkeydown="if(event.key==='Enter')verifyPin()">
+      <div id="pin-error" style="color:var(--red); font-size:0.8rem; display:none; margin-bottom:10px;">❌ Invalid PIN. Default is 2026.</div>
+      <button class="btn-action" style="width:100%;" onclick="verifyPin()">AUTHENTICATE ↵</button>
+    </div>
+  </div>
+
+  <script>
+    // --------------------------------------------------------
+    // WEB AUDIO API SOUND GENERATOR
+    // --------------------------------------------------------
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function playBeep(freq = 880, type = 'sine', duration = 0.08) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
+      playBeep(440, 'triangle', 0.1);
+    }
+
+    // --------------------------------------------------------
+    // ARC REACTOR 60 FPS CANVAS VISUALIZER
+    // --------------------------------------------------------
+    const canvas = document.getElementById('reactor-canvas');
+    const ctx = canvas.getContext('2d');
+    let angle = 0;
+    let reactorState = 'IDLE'; // IDLE, LISTENING, THINKING, SPEAKING
+    let ripplePulse = 0;
+
+    function drawReactor() {
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let color = '#00f5ff';
+      let speed = 0.02;
+      if (reactorState === 'THINKING') { color = '#a855f7'; speed = 0.06; }
+      else if (reactorState === 'LISTENING') { color = '#10b981'; speed = 0.04; }
+      else if (reactorState === 'SPEAKING') { color = '#38bdf8'; speed = 0.05; }
+
+      angle += speed;
+      ripplePulse += 0.05;
+
+      // Glow center
+      const radGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 65 + Math.sin(ripplePulse) * 8);
+      radGrad.addColorStop(0, color);
+      radGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = radGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 75, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Outer Ticks Ring
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 28; i++) {
+        const theta = (i / 28) * Math.PI * 2 + angle;
+        const x1 = cx + Math.cos(theta) * 95;
+        const y1 = cy + Math.sin(theta) * 95;
+        const x2 = cx + Math.cos(theta) * 105;
+        const y2 = cy + Math.sin(theta) * 105;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      // Rotating Arcs
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 80, angle * 1.5, angle * 1.5 + Math.PI * 0.7);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 80, angle * 1.5 + Math.PI, angle * 1.5 + Math.PI * 1.7);
+      ctx.stroke();
+
+      // Inner Counter-Rotating Ring
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 55, -angle * 2, -angle * 2 + Math.PI * 1.2);
+      ctx.stroke();
+
+      requestAnimationFrame(drawReactor);
+    }
+    drawReactor();
+
+    canvas.addEventListener('click', () => {
+      playBeep(1200, 'sine', 0.12);
+      reactorState = reactorState === 'IDLE' ? 'THINKING' : 'IDLE';
+    });
+
+    // --------------------------------------------------------
+    // TAB NAVIGATION
+    // --------------------------------------------------------
+    function switchTab(tabId) {
+      playBeep(650, 'sine', 0.05);
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.innerText.toLowerCase().includes(tabId));
+      if (targetBtn) targetBtn.classList.add('active');
+      const targetPage = document.getElementById('tab-' + tabId);
+      if (targetPage) targetPage.classList.add('active');
+
+      document.getElementById('bottom-dock').style.display = (tabId === 'terminal') ? 'flex' : 'none';
+      if (tabId === 'telemetry') testCloudPing();
+    }
+
+    // --------------------------------------------------------
+    // WEBCRYPTO AES-256 GCM UNLOCK WITH PIN 2026
+    // --------------------------------------------------------
+    const CRYPTO_CONFIG = {
+      salt: "bmV4dXNfYnJhaW5fc2FsdF8yMDI2",
+      nonce: "bmV4dXNfbm9uY2VfMTI=",
+      ciphertext: "icXP3HwZPpPD7i9VgWw5xSI8lXq0vU6GUXy9o2ER+5d3TA0xvRTz+NnsWhH9HrtFW9aKQG22tBH1VWy8TnEqY3uANd3v"
+    };
+
+    async function decryptGeminiKey(pin) {
+      try {
+        const enc = new TextEncoder();
+        const salt = Uint8Array.from(atob(CRYPTO_CONFIG.salt), c => c.charCodeAt(0));
+        const nonce = Uint8Array.from(atob(CRYPTO_CONFIG.nonce), c => c.charCodeAt(0));
+        const ciphertext = Uint8Array.from(atob(CRYPTO_CONFIG.ciphertext), c => c.charCodeAt(0));
+
+        const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(pin), { name: "PBKDF2" }, false, ["deriveKey"]);
+        const key = await crypto.subtle.deriveKey(
+          { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
+          keyMaterial,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["decrypt"]
+        );
+
+        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: nonce }, key, ciphertext);
+        return new TextDecoder().decode(decrypted);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function verifyPin() {
+      const pin = document.getElementById('pin-input').value.trim();
+      const err = document.getElementById('pin-error');
+      const key = await decryptGeminiKey(pin);
+
+      if (key && key.startsWith("AQ.")) {
+        playBeep(980, 'triangle', 0.15);
+        localStorage.setItem("nexus_gemini_key", key);
+        document.getElementById('lock-modal').style.display = 'none';
+      } else {
+        playBeep(220, 'sawtooth', 0.25);
+        err.style.display = 'block';
+        document.getElementById('pin-input').value = '';
+      }
+    }
+
+    function lockSystem() {
+      localStorage.removeItem("nexus_gemini_key");
+      document.getElementById('lock-modal').style.display = 'flex';
+      document.getElementById('pin-input').value = '';
+    }
+
+    if (localStorage.getItem("nexus_gemini_key")) {
+      document.getElementById('lock-modal').style.display = 'none';
+    }
+
+    // --------------------------------------------------------
+    // AI CHAT & GEMINI CLOUD ENGINE
+    // --------------------------------------------------------
+    async function callGemini(promptText, imageBase64 = null) {
+      const apiKey = localStorage.getItem("nexus_gemini_key");
+      if (!apiKey) throw new Error("Authentication required. Please enter PIN.");
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+      const systemPrompt = "You are J.A.R.V.I.S., Tony Stark's elite AI assistant engineered for Sachin Naik. Speak sharp, articulate, and respectful ('boss'). Keep answers punchy. Think internally inside <think>...</think> tags.";
+
+      const parts = [{ text: `${systemPrompt}\n\nUser: ${promptText}` }];
+      if (imageBase64) {
+        parts.push({
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: imageBase64
+          }
+        });
+      }
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: parts }] })
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+      let thinking = "";
+      let response = raw;
+      const match = raw.match(/<think>([\s\S]*?)<\/think>/);
+      if (match) {
+        thinking = match[1].trim();
+        response = raw.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+      }
+      return { response, thinking };
+    }
+
+    function appendMessage(role, text, thinking = "") {
+      const chatBox = document.getElementById('chat-box');
+      const msg = document.createElement('div');
+      msg.className = `msg ${role}`;
+
+      let html = "";
+      if (thinking) {
+        html += `
+          <div class="thinking-box">
+            <div class="thinking-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='block'?'none':'block'">
+              <span>🧠 Internal Neural Reasoning</span>
+              <span>▼</span>
+            </div>
+            <div class="thinking-body">${textEscape(thinking)}</div>
+          </div>
+        `;
+      }
+      html += `<div class="bubble">${formatMarkdown(text)}</div>`;
+      msg.innerHTML = html;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return msg;
+    }
+
+    function textEscape(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function formatMarkdown(str) {
+      return textEscape(str)
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+        .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:#00f5ff;">$1</code>');
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('prompt-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      playBeep(800, 'sine', 0.08);
+      input.value = '';
+      appendMessage('user', text);
+
+      reactorState = 'THINKING';
+      const placeholder = appendMessage('assistant', 'J.A.R.V.I.S. is processing...');
+
+      try {
+        const t0 = performance.now();
+        const { response, thinking } = await callGemini(text);
+        const t1 = performance.now();
+        document.getElementById('telemetry-ping').innerText = `${Math.round(t1 - t0)} ms`;
+
+        placeholder.remove();
+        appendMessage('assistant', response, thinking);
+        reactorState = 'SPEAKING';
+        speakText(response.slice(0, 160));
+      } catch (err) {
+        placeholder.remove();
+        appendMessage('assistant', `⚠️ System Error: ${err.message}`);
+        reactorState = 'IDLE';
+      }
+    }
+
+    // --------------------------------------------------------
+    // SPEECH SYNTHESIS & VOICE DICTATION
+    // --------------------------------------------------------
+    function speakText(text) {
+      if (!('speechSynthesis' in window) || !soundEnabled) {
+        reactorState = 'IDLE';
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const clean = text.replace(/<[^>]*>/g, '').replace(/[*`_]/g, '');
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.rate = 1.05;
+      utter.pitch = 1.0;
+      utter.onend = () => { reactorState = 'IDLE'; };
+      window.speechSynthesis.speak(utter);
+    }
+
+    let recognition = null;
+    let isListening = false;
+    function toggleVoiceInput() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("Speech Recognition not supported on this browser.");
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+        return;
+      }
+
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRec();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        isListening = true;
+        reactorState = 'LISTENING';
+        document.getElementById('mic-btn').classList.add('active');
+        playBeep(700, 'sine', 0.1);
+      };
+
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        document.getElementById('prompt-input').value = transcript;
+        sendMessage();
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        document.getElementById('mic-btn').classList.remove('active');
+        if (reactorState === 'LISTENING') reactorState = 'IDLE';
+      };
+
+      recognition.start();
+    }
+
+    // --------------------------------------------------------
+    // CAMERA OPTICS & GENERATIVE CINEMATIC AD
+    // --------------------------------------------------------
+    let stream = null;
+    async function startCamera() {
+      const video = document.getElementById('webcam-video');
+      playBeep(900, 'triangle', 0.08);
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = stream;
+      } catch (e) {
+        alert("Camera access denied or unavailable: " + e.message);
+      }
+    }
+
+    async function takeSnapshotAndGenerateAd() {
+      const video = document.getElementById('webcam-video');
+      const canvasSnap = document.getElementById('snapshot-canvas');
+      if (!stream || video.videoWidth === 0) {
+        await startCamera();
+        alert("Camera ready. Align your product in the reticle and tap 'Create Cinematic Ad' again.");
+        return;
+      }
+
+      playBeep(1100, 'square', 0.15);
+      canvasSnap.width = video.videoWidth;
+      canvasSnap.height = video.videoHeight;
+      const ctxSnap = canvasSnap.getContext('2d');
+      ctxSnap.drawImage(video, 0, 0);
+
+      const base64Data = canvasSnap.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+      document.getElementById('ad-result-card').style.display = 'block';
+      const outputText = document.getElementById('ad-output-text');
+      outputText.innerText = "Analyzing product and generating 4-scene cinematic ad storyboard...";
+
+      const adPrompt = `
+Analyze this physical product held in the camera frame.
+Generate an ultra-cinematic Hollywood commercial storyboard and AI video generation prompts (Runway Gen-3 / Kling 1.5).
+Format:
+1. Product Name & Tagline
+2. Cinematic Vision & Mood
+3. 4-Shot Storyboard (Scene, Shot Type, Lighting/FX, Voiceover)
+4. AI Video Generator Prompt (Copy-paste ready for Runway Gen-3)
+5. Audio Design & SFX
+`;
+
+      try {
+        const { response } = await callGemini(adPrompt, base64Data);
+        outputText.innerText = response;
+        speakText("I have formulated the cinematic commercial storyboard and AI video prompts for your product, boss.");
+      } catch (err) {
+        outputText.innerText = `Error generating ad: ${err.message}`;
+      }
+    }
+
+    // --------------------------------------------------------
+    // CREATOR STUDIO (MEMESWORLD21 / FUSIONX)
+    // --------------------------------------------------------
+    let activeChannel = 'memesworld21';
+
+    function selectChannel(ch) {
+      activeChannel = ch;
+      playBeep(600, 'sine', 0.05);
+      document.getElementById('pill-memes').classList.toggle('active', ch === 'memesworld21');
+      document.getElementById('pill-fusion').classList.toggle('active', ch === 'FusionX_YT');
+    }
+
+    async function generateStudioContent(type) {
+      const topic = document.getElementById('studio-topic-input').value.trim() || "trending viral moment";
+      playBeep(850, 'triangle', 0.08);
+
+      document.getElementById('studio-result-card').style.display = 'block';
+      const out = document.getElementById('studio-output-text');
+      out.innerText = "Crafting high-CTR studio content...";
+
+      let prompt = "";
+      if (type === 'viral_seo') {
+        prompt = `Generate a viral YouTube SEO package for channel @${activeChannel} on topic: '${topic}'. Provide: 3 ultra high-CTR clickbait titles with emojis, 2-paragraph viral description with timestamps & hashtags, and top 15 high-volume search tags.`;
+      } else {
+        prompt = `Generate a high-retention 15-second YouTube Shorts Meme Script for channel @${activeChannel} on topic: '${topic}'. Include Scene Setup (0-3s), Caption Text, Audio SFX, and Punchline Climax (12-15s).`;
+      }
+
+      try {
+        const { response } = await callGemini(prompt);
+        out.innerText = response;
+      } catch (err) {
+        out.innerText = `Error: ${err.message}`;
+      }
+    }
+
+    function copyStudioOutput() {
+      const text = document.getElementById('studio-output-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        playBeep(1200, 'sine', 0.08);
+        alert("Copied to clipboard!");
+      });
+    }
+
+    // --------------------------------------------------------
+    // TELEMETRY PING
+    // --------------------------------------------------------
+    async function testCloudPing() {
+      const nodeEl = document.getElementById('telemetry-node');
+      const pingEl = document.getElementById('telemetry-ping');
+      nodeEl.innerText = "ONLINE";
+      nodeEl.style.color = "var(--cyan)";
+
+      const t0 = performance.now();
+      try {
+        await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${localStorage.getItem("nexus_gemini_key") || ''}`, { method: 'GET' });
+        const t1 = performance.now();
+        pingEl.innerText = `${Math.round(t1 - t0)} ms`;
+      } catch (e) {
+        pingEl.innerText = "OFFLINE";
+        pingEl.style.color = "var(--red)";
+      }
+    }
+
+    // PWA Install prompt handler
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('pwa-install-btn');
+      if (btn) {
+        btn.style.display = 'flex';
+        btn.onclick = () => {
+          btn.style.display = 'none';
+          deferredPrompt.prompt();
+          deferredPrompt = null;
+        };
+      }
+    });
+  </script>
+</body>
+</html>
