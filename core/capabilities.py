@@ -49,6 +49,14 @@ CAPABILITIES = {
         "SCREEN_WHAT_DO_YOU_SEE",
         "WORKSPACE_SETUP",
         "SYSTEM_DIAGNOSTICS",
+        "EXECUTE_SHELL",
+        "CLEAN_TEMP",
+        "SET_VOLUME_LEVEL",
+        "NETWORK_STATUS",
+        "MANAGE_PROCESS",
+        "SYSTEM_HOTKEY",
+        "OPEN_FOLDER",
+        "SYSTEM_SELF_HEAL",
     ],
 
     CAPABILITY_PHONE: [

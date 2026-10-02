@@ -292,6 +292,73 @@ def classify_command(text):
     ):
         return "SYSTEM_DIAGNOSTICS"
 
+    if (
+        command.startswith("run powershell ")
+        or command.startswith("powershell ")
+        or command.startswith("execute command ")
+        or command.startswith("run command ")
+        or command.startswith("shell ")
+    ):
+        return "EXECUTE_SHELL"
+
+    if command in (
+        "clean temp",
+        "clear cache",
+        "cleanup pc",
+        "clean temporary files",
+        "clean temp files",
+        "clean temporary",
+        "disk cleanup",
+    ):
+        return "CLEAN_TEMP"
+
+    if (
+        command.startswith("set volume to ")
+        or (command.startswith("volume ") and any(c.isdigit() for c in command))
+    ):
+        return "SET_VOLUME_LEVEL"
+
+    if command in (
+        "check wifi",
+        "wifi status",
+        "network status",
+        "ip address",
+        "my ip",
+        "check network",
+        "what is my ip",
+    ):
+        return "NETWORK_STATUS"
+
+    if command in (
+        "top processes",
+        "running processes",
+        "check processes",
+        "list processes",
+    ):
+        return "MANAGE_PROCESS"
+
+    if command.startswith("press ") or command.startswith("hotkey "):
+        return "SYSTEM_HOTKEY"
+
+    if (
+        command.startswith("open folder ")
+        or command in ("open downloads", "open documents", "open pictures", "open desktop")
+    ):
+        return "OPEN_FOLDER"
+
+    if command in (
+        "self heal",
+        "auto heal",
+        "repair system",
+        "fix errors",
+        "solve errors",
+        "run self heal",
+        "diagnose and fix",
+        "fix problems",
+        "solve itself",
+    ):
+        return "SYSTEM_SELF_HEAL"
+
     if command.startswith("open on phone ") or command.startswith("open phone app "):
 
         return "PHONE_OPEN_APP"
@@ -658,6 +725,29 @@ def get_command_target(text):
     command = normalize_multilingual_command(
         text
     )
+
+    if command.startswith("run powershell "):
+        return command[len("run powershell "):].strip()
+    if command.startswith("powershell "):
+        return command[len("powershell "):].strip()
+    if command.startswith("execute command "):
+        return command[len("execute command "):].strip()
+    if command.startswith("run command "):
+        return command[len("run command "):].strip()
+    if command.startswith("shell "):
+        return command[len("shell "):].strip()
+    if command.startswith("press "):
+        return command[len("press "):].strip()
+    if command.startswith("hotkey "):
+        return command[len("hotkey "):].strip()
+    if command.startswith("set volume to "):
+        return command[len("set volume to "):].strip()
+    if command.startswith("volume ") and any(c.isdigit() for c in command):
+        return command[len("volume "):].strip()
+    if command.startswith("open folder "):
+        return command[len("open folder "):].strip()
+    if command in ("open downloads", "open documents", "open pictures", "open desktop"):
+        return command.replace("open ", "").strip()
 
     if command.startswith("search youtube "):
 

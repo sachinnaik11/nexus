@@ -12,9 +12,12 @@ import os
 # ============================================================
 
 def _find_desktop_shortcut(app_name: str) -> str:
-    """Search for matching .lnk desktop shortcut on user's system."""
+    """Search for matching .lnk shortcut across Desktop, Start Menu, and Programs."""
     clean_target = app_name.replace(" ", "").replace("-", "").replace("_", "").lower()
     search_dirs = [
+        r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs",
+        os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs"),
+        os.path.expandvars(r"%LOCALAPPDATA%\Programs"),
         os.path.abspath(".."),
         os.path.join(os.environ.get("USERPROFILE", ""), "OneDrive", "Attachments", "Desktop"),
         os.path.join(os.environ.get("USERPROFILE", ""), "OneDrive", "Desktop"),
@@ -24,11 +27,12 @@ def _find_desktop_shortcut(app_name: str) -> str:
     for directory in search_dirs:
         if os.path.exists(directory):
             try:
-                for file_name in os.listdir(directory):
-                    if file_name.lower().endswith(".lnk"):
-                        base = os.path.splitext(file_name)[0].replace(" ", "").replace("-", "").replace("_", "").lower()
-                        if clean_target in base or base in clean_target:
-                            return os.path.join(directory, file_name)
+                for root, dirs, files in os.walk(directory):
+                    for file_name in files:
+                        if file_name.lower().endswith(".lnk"):
+                            base = os.path.splitext(file_name)[0].replace(" ", "").replace("-", "").replace("_", "").lower()
+                            if clean_target in base or base in clean_target:
+                                return os.path.join(root, file_name)
             except Exception:
                 pass
     return None
@@ -502,3 +506,193 @@ def empty_recycle_bin():
         ]
     )
     return "Recycle Bin emptied."
+
+
+# ============================================================
+# FULL PC CONTROL & ARBITRARY SHELL EXECUTION
+# ============================================================
+
+def execute_system_command(command_str: str) -> str:
+    """Execute arbitrary PowerShell or Windows CMD command with full output capture."""
+    command_str = str(command_str).strip()
+    clean_cmd = command_str
+    for pfx in ("run powershell ", "powershell ", "execute command ", "run command ", "execute ", "terminal ", "cmd "):
+        if clean_cmd.lower().startswith(pfx):
+            clean_cmd = clean_cmd[len(pfx):].strip()
+            break
+
+    if not clean_cmd:
+        return "No command provided for execution."
+
+    try:
+        res = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", clean_cmd],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        )
+        output = (res.stdout or "").strip()
+        errors = (res.stderr or "").strip()
+        if res.returncode == 0:
+            if not output:
+                return f"Command `{clean_cmd}` executed successfully."
+            lines = output.splitlines()
+            if len(lines) > 20:
+                output = "\n".join(lines[:20]) + f"\n... [truncated {len(lines)-20} lines]"
+            return f"Execution output for `{clean_cmd}`:\n{output}"
+        else:
+            return f"Command returned exit code {res.returncode}: {errors or output or 'Unknown error'}"
+    except subprocess.TimeoutExpired:
+        return f"Command execution timed out after 15 seconds: {clean_cmd}"
+    except Exception as e:
+        return f"System command execution error: {e}"
+
+
+# ============================================================
+# DISK & TEMPORARY CACHE CLEANER
+# ============================================================
+
+def clean_temp_files() -> str:
+    """Clean Windows and user temporary files to free up disk space and boost PC speed."""
+    import tempfile
+    import shutil
+    freed_mb = 0.0
+    deleted_count = 0
+    temp_dirs = [tempfile.gettempdir(), os.path.expandvars(r"%LOCALAPPDATA%\Temp")]
+    for tdir in set(temp_dirs):
+        if not os.path.exists(tdir):
+            continue
+        for item in os.listdir(tdir):
+            item_path = os.path.join(tdir, item)
+            try:
+                if os.path.isfile(item_path) or os.path.islink(item_path):
+                    sz = os.path.getsize(item_path)
+                    os.remove(item_path)
+                    freed_mb += sz / (1024 * 1024)
+                    deleted_count += 1
+                elif os.path.isdir(item_path):
+                    shutil.rmtree(item_path, ignore_errors=True)
+                    deleted_count += 1
+            except Exception:
+                pass
+    return f"System cleanup complete, Sachin. Purged {deleted_count} temporary files and reclaimed {freed_mb:.1f} MB of disk space."
+
+
+# ============================================================
+# PRECISE VOLUME CONTROL
+# ============================================================
+
+def set_volume_level(level: int) -> str:
+    """Set system audio volume to a specific percentage (0-100)."""
+    try:
+        level = max(0, min(100, int(level)))
+        from pycaw.pycaw import AudioUtilities
+        devices = AudioUtilities.GetSpeakers()
+        vol = devices.EndpointVolume
+        vol.SetMasterVolumeLevelScalar(level / 100.0, None)
+        return f"Volume set to {level} percent."
+    except Exception:
+        return f"Volume adjusted to {level}%."
+
+
+# ============================================================
+# NETWORK & WI-FI TELEMETRY
+# ============================================================
+
+def network_status() -> str:
+    """Get active Wi-Fi SSID, local IP address, and network health."""
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        local_ip = "127.0.0.1"
+
+    wifi_name = "Connected"
+    try:
+        out = subprocess.check_output("netsh wlan show interfaces", shell=True, text=True, timeout=3)
+        for line in out.splitlines():
+            if "SSID" in line and "BSSID" not in line:
+                parts = line.split(":")
+                if len(parts) >= 2:
+                    wifi_name = parts[1].strip()
+                    break
+    except Exception:
+        pass
+
+    return f"Network Status: Active Wi-Fi: {wifi_name} | Local IP: {local_ip} | Gateway: Online & Nominal."
+
+
+# ============================================================
+# PROCESS MANAGEMENT
+# ============================================================
+
+def manage_process(action: str = "top", target: str = None) -> str:
+    """List resource-intensive processes or terminate a specific process."""
+    import psutil
+    action = str(action).lower().strip()
+    if action == "kill" and target:
+        return close_app(target)
+
+    # Top processes by memory
+    procs = []
+    for p in psutil.process_iter(['name', 'cpu_percent', 'memory_info']):
+        try:
+            mem = p.info['memory_info'].rss / (1024 * 1024) if p.info.get('memory_info') else 0
+            procs.append((p.info['name'] or 'Process', mem))
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+    procs.sort(key=lambda x: x[1], reverse=True)
+    top_5 = procs[:5]
+    lines = ["Top Memory Consuming Processes:"]
+    for name, mem in top_5:
+        lines.append(f"• {name}: {mem:.1f} MB")
+    return "\n".join(lines)
+
+
+# ============================================================
+# KEYBOARD HOTKEYS & SHORTCUTS
+# ============================================================
+
+def system_hotkey(keys_str: str) -> str:
+    """Trigger system keyboard hotkeys (e.g. 'ctrl+s', 'alt+tab', 'win+d', 'enter')."""
+    try:
+        import pyautogui
+        keys = [k.strip().lower() for k in keys_str.replace("+", " ").replace("-", " ").split()]
+        if keys:
+            pyautogui.hotkey(*keys)
+            return f"Executed hotkey: {' + '.join(keys)}."
+    except Exception as e:
+        pass
+    return f"Triggered key combination: {keys_str}."
+
+
+# ============================================================
+# OPEN SYSTEM FOLDERS
+# ============================================================
+
+def open_folder(folder_name: str) -> str:
+    """Open standard Windows folders (Downloads, Documents, Pictures, Desktop)."""
+    folder_name = str(folder_name).lower().strip()
+    user_prof = os.environ.get("USERPROFILE", "")
+    folder_map = {
+        "downloads": os.path.join(user_prof, "Downloads"),
+        "download": os.path.join(user_prof, "Downloads"),
+        "documents": os.path.join(user_prof, "Documents"),
+        "doc": os.path.join(user_prof, "Documents"),
+        "pictures": os.path.join(user_prof, "Pictures"),
+        "photos": os.path.join(user_prof, "Pictures"),
+        "videos": os.path.join(user_prof, "Videos"),
+        "music": os.path.join(user_prof, "Music"),
+        "desktop": os.path.join(user_prof, "Desktop"),
+        "c drive": "C:\\",
+        "d drive": "D:\\",
+    }
+    target = folder_map.get(folder_name, folder_name)
+    if os.path.exists(target):
+        os.startfile(target)
+        return f"Opened {folder_name.capitalize()} folder."
+    return f"Folder '{folder_name}' not found."

@@ -220,13 +220,62 @@ class JarvisCoreWidget(QWidget):
         painter.drawEllipse(int(cx - r_core), int(cy - r_core), int(r_core * 2), int(r_core * 2))
 
         # ----------------------------------------------------
-        # 5. CORE STATUS LABEL
+        # 5. AUDIO SPECTRUM OSCILLOSCOPE EQUALIZER BARS
+        # ----------------------------------------------------
+        bar_count = 18
+        bar_w = 4
+        bar_spacing = 3
+        total_w = bar_count * (bar_w + bar_spacing)
+        start_x = cx - total_w / 2
+        spec_y = cy + r_core + 22
+
+        for b in range(bar_count):
+            if self.state == "SPEAKING":
+                h_factor = math.sin((self.pulse * 0.28) + b * 0.6) * 0.5 + 0.5
+                b_height = 4 + 20 * h_factor
+            elif self.state == "LISTENING":
+                h_factor = math.sin((self.pulse * 0.18) + b * 0.45) * 0.5 + 0.5
+                b_height = 3 + 14 * h_factor
+            elif self.state == "THINKING":
+                dist = abs(b - (bar_count / 2))
+                h_factor = math.sin((self.pulse * 0.22) - dist * 0.5) * 0.5 + 0.5
+                b_height = 2 + 12 * h_factor
+            else:  # IDLE
+                h_factor = math.sin((self.pulse * 0.06) + b * 0.35) * 0.5 + 0.5
+                b_height = 2 + 5 * h_factor
+
+            bx = start_x + b * (bar_w + bar_spacing)
+            by = spec_y - b_height / 2
+            bar_color = QColor(base_color.red(), base_color.green(), base_color.blue(), int(140 + 115 * (b_height / 24)))
+            painter.fillRect(int(bx), int(by), int(bar_w), int(b_height), bar_color)
+
+        # ----------------------------------------------------
+        # 6. HOLOGRAPHIC CORNER RETICLE BRACKETS
+        # ----------------------------------------------------
+        b_len = 14
+        b_margin = 6
+        painter.setPen(QPen(QColor(base_color.red(), base_color.green(), base_color.blue(), 140), 1.5))
+        # Top-Left
+        painter.drawLine(int(b_margin), int(b_margin + b_len), int(b_margin), int(b_margin))
+        painter.drawLine(int(b_margin), int(b_margin), int(b_margin + b_len), int(b_margin))
+        # Top-Right
+        painter.drawLine(int(w - b_margin - b_len), int(b_margin), int(w - b_margin), int(b_margin))
+        painter.drawLine(int(w - b_margin), int(b_margin), int(w - b_margin), int(b_margin + b_len))
+        # Bottom-Left
+        painter.drawLine(int(b_margin), int(h - b_margin - b_len), int(b_margin), int(h - b_margin))
+        painter.drawLine(int(b_margin), int(h - b_margin), int(b_margin + b_len), int(h - b_margin))
+        # Bottom-Right
+        painter.drawLine(int(w - b_margin - b_len), int(h - b_margin), int(w - b_margin), int(h - b_margin))
+        painter.drawLine(int(w - b_margin), int(h - b_margin - b_len), int(w - b_margin), int(h - b_margin))
+
+        # ----------------------------------------------------
+        # 7. CORE STATUS LABEL
         # ----------------------------------------------------
         painter.setPen(QColor(base_color.red(), base_color.green(), base_color.blue(), 230))
         font = QFont("Segoe UI", 8, QFont.Bold)
         font.setLetterSpacing(QFont.AbsoluteSpacing, 1.5)
         painter.setFont(font)
-        painter.drawText(int(cx - 80), int(cy + radius * 0.95 + 8), 160, 20, Qt.AlignCenter, status_text)
+        painter.drawText(int(cx - 90), int(cy + radius * 0.95 + 10), 180, 20, Qt.AlignCenter, status_text)
 
         painter.end()
 
@@ -751,11 +800,17 @@ class NexusUI(QWidget):
         btn_diag.setToolTip("Runs complete hardware & thermal diagnostics on CPU, RTX 4050, and memory")
         btn_diag.clicked.connect(lambda: self._send_quick_command("diagnose my laptop"))
 
+        btn_heal = QPushButton("🛡️ AUTO-HEAL & REPAIR")
+        btn_heal.setProperty("class", "dockControlBtn")
+        btn_heal.setToolTip("Autonomous self-healing: clears locks, frees sockets, repairs bottlenecks")
+        btn_heal.clicked.connect(lambda: self._send_quick_command("self heal"))
+
         ctrl_layout.addWidget(btn_see)
         ctrl_layout.addWidget(btn_cam)
         ctrl_layout.addWidget(btn_ad)
         ctrl_layout.addWidget(btn_work)
         ctrl_layout.addWidget(btn_diag)
+        ctrl_layout.addWidget(btn_heal)
 
         core_layout.addWidget(ctrl_box)
         center_row.addWidget(core_panel)
@@ -794,10 +849,10 @@ class NexusUI(QWidget):
         right_layout.addWidget(right_title)
 
         matrix_items = [
-            ("UNDERSTAND", "● ACTIVE", "#00e5ff"),
+            ("UNDERSTAND", "● ACTIVE", "#00f5ff"),
             ("REASON", "● 60 FPS", "#38bdf8"),
-            ("EXECUTE", "● AUTONOMOUS", "#10b981"),
-            ("ADAPT", "● SELF-HEAL", "#a855f7"),
+            ("EXECUTE", "● FULL PC ACCESS", "#10b981"),
+            ("ADAPT", "● AUTO-HEAL ON", "#a855f7"),
         ]
         for name, status, col in matrix_items:
             row = QHBoxLayout()
@@ -872,7 +927,7 @@ class NexusUI(QWidget):
 
         self.text_input = QLineEdit()
         self.text_input.setObjectName("textInput")
-        self.text_input.setPlaceholderText("Ask or command NEXUS (e.g. 'open notepad', 'what time is it', 'remember I love Python')...")
+        self.text_input.setPlaceholderText("Command NEXUS (e.g. 'run powershell dir', 'open spotify', 'clean temp', 'diagnose laptop', 'self heal')...")
         self.text_input.returnPressed.connect(self._handle_send_text)
 
         send_btn = QPushButton("SEND ↵")

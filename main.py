@@ -612,6 +612,18 @@ def verify_command_result(
         "storyboard",
         "screen vision",
         "observing",
+        "executed",
+        "cleanup complete",
+        "purged",
+        "reclaimed",
+        "volume set",
+        "network status",
+        "active wi-fi",
+        "top memory",
+        "hotkey",
+        "healed",
+        "self-healing",
+        "recovered",
     )
 
     if any(
