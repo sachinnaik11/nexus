@@ -63,7 +63,6 @@ class PhoneController:
         candidates = [
             os.path.join(nexus_dir, "bin", "scrcpy-win64-v4.1", "adb.exe"),
             os.path.join(nexus_dir, "bin", "platform-tools", "adb.exe"),
-            r"C:\Program Files\BlueStacks_nxt\HD-Adb.exe",
             os.path.expandvars(r"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"),
             r"C:\platform-tools\adb.exe",
             "adb",
@@ -101,13 +100,27 @@ class PhoneController:
         return None
 
     def _run_adb(self, args: List[str], timeout: int = 10) -> subprocess.CompletedProcess:
-        """Execute an ADB command."""
+        """Execute an ADB command with device error verification."""
         if not self.adb_path:
             self.adb_path = self._discover_adb()
         if not self.adb_path:
             raise RuntimeError("ADB binary not found on this system.")
         cmd = [self.adb_path] + args
-        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        err = (res.stderr or "").strip().lower()
+        out = (res.stdout or "").strip().lower()
+        combined = f"{out} {err}"
+
+        # If running a shell or action command, verify device is actually attached
+        if args and args[0] in ("shell", "input", "am", "screencap", "pull", "tcpip"):
+            if "device not found" in combined or "no devices/emulators found" in combined:
+                raise RuntimeError("No phone is currently connected. Please plug in your phone via USB or connect via Wi-Fi.")
+            if "device unauthorized" in combined:
+                raise RuntimeError("Phone authorization required. Look at your phone screen and tap 'Allow' on the USB debugging prompt.")
+            if "device offline" in combined:
+                raise RuntimeError("Phone is offline. Please reconnect your phone.")
+
+        return res
 
     # ------------------------------------------------------------
     # CONNECTION & DEVICE DISCOVERY
@@ -177,19 +190,26 @@ class PhoneController:
         """Connect to Android phone over Wi-Fi (e.g. 192.168.1.5:5555)."""
         clean_target = str(target or "").strip()
 
-        # If user passed placeholder like '192.168.1.X'
-        if not clean_target or "x" in clean_target.lower():
+        # If user passed placeholder like '192.168.1.X' or ':5555' without an IP
+        if (
+            not clean_target
+            or "x" in clean_target.lower()
+            or clean_target.startswith(":")
+            or not re.search(r"\d+\.\d+\.\d+\.\d+", clean_target)
+        ):
             return (
-                "[WIRELESS PHONE SETUP]\n\n"
-                "Notice: '192.168.1.X' is just an example template.\n\n"
-                "EASIEST WAY (100% Automatic):\n"
-                "1. Plug your phone into your laptop via USB cable.\n"
-                "2. Tap 'Allow' on your phone screen.\n"
-                "3. Click 'Enable Wireless' in NEXUS (or say 'enable wireless phone').\n"
-                "   NEXUS will find your real IP and connect automatically, then you can unplug!\n\n"
-                "MANUAL WAY:\n"
-                "Check your phone's real IP in: Settings > About Phone > Status Information > IP address,\n"
-                "then say: 'connect phone <your_real_ip>:5555'."
+                "[PHONE IP ADDRESS NEEDED]\n\n"
+                "You typed ':5555', but the phone's IP address is missing before ':5555'.\n\n"
+                "To connect right now, choose one of these two options:\n\n"
+                "• OPTION 1 (EASIEST - Plug USB Cable):\n"
+                "  1. Plug your phone into your laptop with a USB cable.\n"
+                "  2. Make sure your phone screen is unlocked.\n"
+                "  3. Type 'control my mobile' (to control it instantly!) or 'enable wireless phone' (to auto-detect the IP and switch to wireless).\n\n"
+                "• OPTION 2 (Look up IP on Phone):\n"
+                "  1. On your phone, go to: Settings > About Phone > Status Information > IP address.\n"
+                "  2. Find your phone's number (e.g. 192.168.1.25).\n"
+                "  3. Type: connect phone <your_phone_ip>:5555\n"
+                "     (For example: connect phone 192.168.1.25:5555)"
             )
 
         if ":" not in clean_target:
