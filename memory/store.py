@@ -71,18 +71,21 @@ def save_memory(memory):
 
     ensure_memory_directory()
 
-    with open(
-        MEMORY_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
+    try:
+        with open(
+            MEMORY_FILE,
+            "w",
+            encoding="utf-8"
+        ) as file:
 
-        json.dump(
-            memory,
-            file,
-            indent=2,
-            ensure_ascii=False
-        )
+            json.dump(
+                memory,
+                file,
+                indent=2,
+                ensure_ascii=False
+            )
+    except OSError as e:
+        print(f"NEXUS MEMORY WARNING: Could not save memory: {e}")
 
 
 def add_memory(text):
@@ -147,18 +150,21 @@ def save_conversation(conversation):
 
     ensure_memory_directory()
 
-    with open(
-        CONVERSATION_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
+    try:
+        with open(
+            CONVERSATION_FILE,
+            "w",
+            encoding="utf-8"
+        ) as file:
 
-        json.dump(
-            conversation,
-            file,
-            indent=2,
-            ensure_ascii=False
-        )
+            json.dump(
+                conversation,
+                file,
+                indent=2,
+                ensure_ascii=False
+            )
+    except OSError as e:
+        print(f"NEXUS MEMORY WARNING: Could not save conversation: {e}")
 
 
 def add_conversation(

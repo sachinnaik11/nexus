@@ -1,29 +1,5 @@
 [
   {
-    "user": "my test number is",
-    "nexus": "Could you please clarify what you mean by \"my test number is\", Sachin? Are you trying to save a test phone number or ID, or looking for something specific?"
-  },
-  {
-    "user": "my test number is 4729",
-    "nexus": "Got it, Sachin. I've noted your test number as 4729. Let me know if you need help with anything else!"
-  },
-  {
-    "user": "what is my test number",
-    "nexus": "Your test number is 4729, Sachin."
-  },
-  {
-    "user": "what is my favourite game",
-    "nexus": "Your favourite game is GTA V, Sachin."
-  },
-  {
-    "user": "hello Nexus",
-    "nexus": "Hello! How can I assist you today, Sachin? 😊"
-  },
-  {
-    "user": "latest news about AI",
-    "nexus": "Here are the latest news updates about AI:\n\n1. **AI News | Latest Updates**: AI News provides the latest updates on artificial intelligence, machine learning, and emerging technologies worldwide.  \n   [Read more](https://www.artificialintelligence-news.com/)\n\n2. **TechCrunch AI Coverage**: TechCrunch covers AI and machine learning tech, the companies building them, and the ethical issues"
-  },
-  {
     "user": "65",
     "nexus": "Could you please clarify what \"65\" refers to, Sachin? Are you updating your test number or referring to something else?"
   },
@@ -78,5 +54,29 @@
   {
     "user": "Nexus YouTube open karo",
     "nexus": "I will open YouTube for you, Sachin."
+  },
+  {
+    "user": "explain artificial intelligence in two sentence",
+    "nexus": "Artificial intelligence refers to the simulation of human intelligence in machines programmed to think, learn, and solve complex problems. These systems use data and algorithms to perform tasks such as reasoning, perception, and decision-making autonomously."
+  },
+  {
+    "user": "explain artificial intelligence in two sentence",
+    "nexus": "Artificial intelligence refers to the simulation of human intelligence in machines designed to think, learn, and solve problems like humans. These systems use algorithms and data to autonomously perform complex tasks such as reasoning, perception, and decision-making."
+  },
+  {
+    "user": "hello",
+    "nexus": "Hello Sachin! How can I help you today?"
+  },
+  {
+    "user": "ಎಲ್ಲಿ ಇವನು",
+    "nexus": "Who is \"इवನು\" (he/him) referring to, Sachin? Are you looking for Roshan from your earlier message? Let me know how I can help find him."
+  },
+  {
+    "user": "இது என்ன சொல்லு",
+    "nexus": "Sachin, you asked me to explain what \"இது என்ன சொல்லு\" means or what the previous topic was. Could you please clarify what \"это\" (this) refers to, or let me know if you want me to explain something specific in Tamil?"
+  },
+  {
+    "user": "சங்கரி",
+    "nexus": "Sachin, what would you like to know about Sangari?"
   }
 ]
