@@ -14,6 +14,8 @@ CAPABILITY_WEB = "WEB"
 CAPABILITY_AI = "AI"
 CAPABILITY_MEMORY = "MEMORY"
 CAPABILITY_SYSTEM = "SYSTEM"
+CAPABILITY_YOUTUBE = "YOUTUBE"
+CAPABILITY_PHONE = "PHONE"
 
 
 # ------------------------------------------------------------
@@ -36,11 +38,49 @@ CAPABILITIES = {
         "MOUSE_CENTER",
         "OPEN_WHATSAPP",
         "SLEEP",
+        "CLOSE",
+        "UNMUTE",
+        "LOCK_PC",
+        "SHOW_DESKTOP",
+        "EMPTY_RECYCLE_BIN",
+        "CAMERA_OPEN",
+        "CAMERA_SNAPSHOT",
+        "CINEMATIC_AD",
+        "SCREEN_WHAT_DO_YOU_SEE",
+        "WORKSPACE_SETUP",
+    ],
+
+    CAPABILITY_PHONE: [
+        "PHONE_BATTERY",
+        "PHONE_SCREENSHOT",
+        "PHONE_LOCK",
+        "PHONE_VOLUME_UP",
+        "PHONE_VOLUME_DOWN",
+        "PHONE_OPEN_APP",
+        "PHONE_CLOSE_APP",
+        "PHONE_CALL",
+        "PHONE_STATUS",
     ],
 
     CAPABILITY_WEB: [
         "WEB_SEARCH",
         "YOUTUBE_SEARCH",
+    ],
+
+    CAPABILITY_YOUTUBE: [
+        "YOUTUBE_STUDIO",
+        "OPEN_CAPCUT",
+        "YOUTUBE_VIRAL_SEO",
+        "YOUTUBE_MEME_SHORT",
+        "SET_NICHE",
+        "CHECK_REMINDER",
+        "CLOUD_SYNC",
+        "CLOUD_STATUS",
+        "YOUTUBE_AUTO_OPTIMIZE",
+        "YOUTUBE_STUDIO_AUTOFILL",
+        "YOUTUBE_START_WATCHER",
+        "YOUTUBE_STOP_WATCHER",
+        "YOUTUBE_AUTO_UPLOAD_MEME",
     ],
 
     CAPABILITY_AI: [

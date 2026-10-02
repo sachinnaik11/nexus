@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: nexus-cloud-node
+    env: python
+    buildCommand: pip install -r cloud/requirements.txt
+    startCommand: python -m cloud.nexus_cloud_server
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CHANNEL_NICHE
+        value: "Gaming & Tech Entertainment"
+      - key: CLOUD_CHECK_INTERVAL_SECONDS
+        value: "21600"
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false

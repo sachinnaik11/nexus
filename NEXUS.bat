@@ -1,4 +1,6 @@
 @echo off
-cd /d "C:\Users\sachin naik\OneDrive\Attachments\Desktop\nexus"
+title NEXUS V1 DESKTOP
+cd /d "%~dp0"
 call .venv\Scripts\activate
 python main.py
+pause

@@ -16,6 +16,9 @@ INTENT_MISSION_PAUSE = "mission_pause"
 INTENT_MISSION_RESUME = "mission_resume"
 INTENT_MISSION_CANCEL = "mission_cancel"
 
+INTENT_PERMISSION_APPROVE = "permission_approve"
+INTENT_PERMISSION_REJECT = "permission_reject"
+
 
 # ============================================================
 # NORMALIZE TEXT
@@ -29,6 +32,9 @@ def normalize_text(text):
         "nexus ",
         "hey nexus ",
         "ok nexus ",
+        "jarvis ",
+        "hey jarvis ",
+        "ok jarvis ",
     )
 
     for wake_word in wake_words:
@@ -97,6 +103,32 @@ def detect_intent(text):
         return INTENT_MISSION_CANCEL
 
     # --------------------------------------------------------
+    # PERMISSIONS & APPROVALS
+    # --------------------------------------------------------
+
+    if command in {
+        "approve",
+        "yes approve",
+        "confirm",
+        "authorize",
+        "grant permission",
+        "permission granted",
+    }:
+
+        return INTENT_PERMISSION_APPROVE
+
+    if command in {
+        "reject",
+        "deny",
+        "disapprove",
+        "deny permission",
+        "cancel action",
+        "permission denied",
+    }:
+
+        return INTENT_PERMISSION_REJECT
+
+    # --------------------------------------------------------
     # TIME
     # --------------------------------------------------------
 
@@ -147,15 +179,105 @@ def detect_intent(text):
 
     command_starts = (
         "open ",
+        "launch ",
+        "start ",
+        "close ",
+        "terminate ",
+        "kill ",
         "search ",
         "type ",
         "write ",
         "take screenshot",
+        "take a screenshot",
         "screenshot",
+        "take snapshot",
+        "take a snapshot",
+        "camera snapshot",
+        "take photo",
+        "take a photo",
+        "create cinematic ad",
+        "create a cinematic ad",
+        "make cinematic ad",
+        "make a cinematic ad",
+        "cinematic ad",
+        "what do you see",
+        "what's on my screen",
+        "what is on my screen",
+        "describe my screen",
+        "set everything up",
+        "set up everything",
+        "setup workspace",
+        "set up workspace",
         "volume ",
         "mute",
+        "unmute",
+        "lock pc",
+        "lock screen",
+        "lock computer",
+        "sleep",
+        "show desktop",
+        "minimize windows",
+        "minimize all",
+        "empty recycle bin",
         "click",
         "move mouse",
+        "generate viral ",
+        "viral seo",
+        "viral tags",
+        "viral title",
+        "youtube seo",
+        "create meme",
+        "generate meme",
+        "make meme",
+        "meme short",
+        "set channel niche",
+        "set niche",
+        "my niche is",
+        "upload reminder",
+        "check upload reminder",
+        "check reminder",
+        "youtube studio",
+        "cloud sync",
+        "sync with cloud",
+        "sync cloud",
+        "cloud status",
+        "phone battery",
+        "check phone",
+        "phone screenshot",
+        "lock phone",
+        "lock my phone",
+        "phone volume",
+        "open on phone ",
+        "open phone app ",
+        "close on phone ",
+        "close phone app ",
+        "phone call ",
+        "call ",
+        "phone info",
+        "connect phone ",
+        "auto optimize",
+        "auto edit",
+        "autofill studio",
+        "autofill youtube",
+        "start channel watcher",
+        "stop channel watcher",
+        "start youtube automation",
+        "stop youtube automation",
+        "make it auto",
+        "make it automatic",
+        "turn on auto details",
+        "enable auto details",
+        "turn off auto details",
+        "disable auto details",
+        "auto add details",
+        "automatic details",
+        "generate and upload",
+        "create and upload",
+        "auto upload",
+        "upload meme",
+        "add details",
+        "add video details",
+        "update video details",
     )
 
     if command.startswith(

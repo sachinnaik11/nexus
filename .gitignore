@@ -2,3 +2,11 @@
 .venv/
 __pycache__/
 *.pyc
+cloud_storage.json
+bin/
+data/
+*.mp4
+*.wav
+assets/generated_memes/
+*.png
+!web/*.png

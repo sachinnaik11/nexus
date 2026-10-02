@@ -9,6 +9,8 @@ import threading
 import requests
 import json
 import re
+import queue
+import time
 
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -61,7 +63,11 @@ from core.intent import (
     INTENT_MISSION_PAUSE,
     INTENT_MISSION_RESUME,
     INTENT_MISSION_CANCEL,
+    INTENT_PERMISSION_APPROVE,
+    INTENT_PERMISSION_REJECT,
 )
+
+from core.permissions import permission_gate
 
 from core.context import (
     build_context,
@@ -1251,26 +1257,30 @@ def handle_visual_request(text):
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
+client = None
 
-if not API_KEY:
-
+if API_KEY:
+    try:
+        client = genai.Client(
+            api_key=API_KEY
+        )
+    except Exception as e:
+        print(f"NEXUS WARNING: Could not initialize Gemini client: {e}")
+        client = None
+else:
     print(
-        "NEXUS ERROR: GEMINI_API_KEY not found in .env"
+        "NEXUS WARNING: GEMINI_API_KEY not found in .env (running in local fallback mode)"
     )
-
-    sys.exit(1)
 
 
 # ============================================================
 # GEMINI
 # ============================================================
 
-client = genai.Client(
-    api_key=API_KEY
-)
-
-
 def gemini_ai(prompt):
+
+    if not client:
+        raise RuntimeError("Gemini client is not configured or available.")
 
     chat = client.chats.create(
         model="gemini-3.5-flash-lite"
@@ -1321,12 +1331,15 @@ def run_both_ai(prompt):
             local_ai,
             prompt
         ): "qwen",
-
-        executor.submit(
-            gemini_ai,
-            prompt
-        ): "gemini",
     }
+
+    if client:
+        tasks[
+            executor.submit(
+                gemini_ai,
+                prompt
+            )
+        ] = "gemini"
 
     for task in as_completed(tasks):
 
@@ -2310,7 +2323,72 @@ def run_mission_worker(plan, mission):
 
 
 # ============================================================
-# VOICE LOOP
+# DUAL INPUT QUEUE (VOICE & TEXT CHAT)
+# ============================================================
+
+input_queue = queue.Queue()
+mic_listening_enabled = True
+
+
+def handle_text_input(text):
+    if text and str(text).strip():
+        input_queue.put(str(text).strip())
+
+
+def handle_mic_toggle(is_active):
+    global mic_listening_enabled
+    mic_listening_enabled = bool(is_active)
+    print(f"NEXUS MICROPHONE: {'ACTIVE' if is_active else 'MUTED'}")
+
+
+def voice_listener_worker():
+    while True:
+        if not mic_listening_enabled:
+            time.sleep(0.3)
+            continue
+
+        try:
+            window.listening_signal.emit()
+            user_input = listen()
+
+            if user_input and user_input.strip():
+                input_queue.put(user_input.strip())
+
+        except Exception as e:
+            time.sleep(0.5)
+
+
+window.text_input_signal.connect(handle_text_input)
+window.mic_toggle_signal.connect(handle_mic_toggle)
+
+mic_thread = threading.Thread(
+    target=voice_listener_worker,
+    daemon=True,
+)
+mic_thread.start()
+
+
+def background_cloud_sync_worker():
+    """Sync state from 24/7 cloud node when desktop starts."""
+    try:
+        from cloud.sync_client import cloud_sync
+        res = cloud_sync.sync()
+        if res.get("success") and res.get("imported_count", 0) > 0:
+            window.activity_signal.emit(f"CLOUD SYNC: {res['imported_count']} DRAFTS IMPORTED")
+    except Exception:
+        pass
+
+
+cloud_sync_thread = threading.Thread(
+    target=background_cloud_sync_worker,
+    daemon=True,
+    name="NexusCloudSyncWorker",
+)
+cloud_sync_thread.start()
+
+
+# ============================================================
+# VOICE & REQUEST LOOP
 # ============================================================
 
 def voice_loop():
@@ -2322,13 +2400,10 @@ def voice_loop():
         try:
 
             # ------------------------------------------------
-            # LISTEN
+            # GET NEXT REQUEST (FROM VOICE OR TEXT)
             # ------------------------------------------------
 
-            window.listening_signal.emit()
-
-            user_input = listen()
-
+            user_input = input_queue.get()
 
             if not user_input:
 
@@ -2447,6 +2522,34 @@ def voice_loop():
                     pass
 
                 break
+
+            # =================================================
+            # SECURITY PERMISSION APPROVAL / REJECTION
+            # =================================================
+
+            if intent == INTENT_PERMISSION_APPROVE:
+
+                ok, msg = permission_gate.approve()
+
+                window.activity_signal.emit(
+                    "PERMISSION GRANTED"
+                )
+
+                respond(msg)
+
+                continue
+
+            if intent == INTENT_PERMISSION_REJECT:
+
+                ok, msg = permission_gate.reject()
+
+                window.activity_signal.emit(
+                    "PERMISSION REJECTED"
+                )
+
+                respond(msg)
+
+                continue
 
 
             # =================================================
@@ -3076,6 +3179,32 @@ thread = threading.Thread(
 )
 
 thread.start()
+
+
+# ============================================================
+# START AUTONOMOUS CHANNEL WATCHER
+# ============================================================
+
+try:
+    from tools.meme_channel_db import meme_db
+    from tools.youtube_automation import youtube_automator
+    if meme_db.is_auto_details_enabled():
+        youtube_automator.start_channel_watcher()
+        print("NEXUS: 24/7 Autonomous YouTube Channel Watcher initialized.")
+except Exception as e:
+    print(f"NEXUS AUTONOMOUS SERVICE INIT ERROR: {e}")
+
+
+# ============================================================
+# START 24/7 CLOUD NODE IN BACKGROUND
+# ============================================================
+
+try:
+    from cloud.nexus_cloud_server import start_cloud_server_background
+    start_cloud_server_background()
+    print("NEXUS: 24/7 Cloud Node initialized in background.")
+except Exception as e:
+    print(f"NEXUS CLOUD NODE INIT ERROR: {e}")
 
 
 # ============================================================

@@ -18,7 +18,6 @@ from core.router import (
     get_command_target,
     normalize_multilingual_command,
 )
-from core.router import normalize_multilingual_command
 
 # ============================================================
 # DECISION TYPES
