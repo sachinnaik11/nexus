@@ -1903,103 +1903,102 @@ class NexusUI(QWidget):
         layout.setContentsMargins(24, 20, 24, 20)
         layout.setSpacing(12)
 
-        header = QLabel("ANDROID PHONE HARDWARE & SYSTEM CONTROL (ADB)")
+        header = QLabel("ANDROID PHONE HARDWARE, SYSTEM & SCREEN CONTROL")
         header.setProperty("class", "panelHeader")
         layout.addWidget(header)
 
-        # Status & Wi-Fi row
-        status_row = QHBoxLayout()
-        status_row.setSpacing(8)
+        # Top Control Bar: Status, Mirror Screen & Wireless Connect
+        top_ctrl = QHBoxLayout()
+        top_ctrl.setSpacing(10)
 
         self.phone_status_label = QLabel("● PHONE STATUS: CHECKING...")
         self.phone_status_label.setStyleSheet("color: #00e5ff; font-weight: bold; font-size: 13px;")
-        status_row.addWidget(self.phone_status_label)
+        top_ctrl.addWidget(self.phone_status_label)
 
-        status_row.addStretch()
+        top_ctrl.addStretch()
+
+        btn_mirror = QPushButton("🖥️ MIRROR & CONTROL SCREEN")
+        btn_mirror.setStyleSheet(
+            "background: #00e5ff; color: #050b14; font-weight: bold; font-size: 12px; padding: 6px 14px; border-radius: 6px;"
+        )
+        btn_mirror.clicked.connect(lambda: self._execute_and_display("mirror phone"))
+        top_ctrl.addWidget(btn_mirror)
 
         self.wifi_ip_input = QLineEdit()
         self.wifi_ip_input.setObjectName("textInput")
         self.wifi_ip_input.setPlaceholderText("Phone IP (e.g. 192.168.1.5)")
-        self.wifi_ip_input.setFixedWidth(180)
-        status_row.addWidget(self.wifi_ip_input)
+        self.wifi_ip_input.setFixedWidth(170)
+        top_ctrl.addWidget(self.wifi_ip_input)
 
         btn_connect = QPushButton("📶 Connect Wi-Fi")
         btn_connect.setProperty("class", "hudButton")
         btn_connect.clicked.connect(self._handle_ui_connect_phone_wifi)
-        status_row.addWidget(btn_connect)
+        top_ctrl.addWidget(btn_connect)
 
-        layout.addLayout(status_row)
+        btn_wireless_switch = QPushButton("⚡ Enable Wireless")
+        btn_wireless_switch.setProperty("class", "hudButton")
+        btn_wireless_switch.setToolTip("Configure ADB port 5555 so you can unplug the USB cable")
+        btn_wireless_switch.clicked.connect(lambda: self._execute_and_display("enable wireless phone"))
+        top_ctrl.addWidget(btn_wireless_switch)
 
-        # Hardware action buttons row
-        btn_row1 = QHBoxLayout()
-        btn_row1.setSpacing(8)
+        layout.addLayout(top_ctrl)
 
-        btn_battery = QPushButton("🔋 Battery Status")
-        btn_battery.setProperty("class", "hudButton")
-        btn_battery.clicked.connect(lambda: self._execute_and_display("phone battery"))
-        btn_row1.addWidget(btn_battery)
+        # Hardware & Navigation buttons row
+        btn_nav = QHBoxLayout()
+        btn_nav.setSpacing(8)
 
-        btn_shot = QPushButton("📸 Take Screenshot")
-        btn_shot.setProperty("class", "hudButton")
-        btn_shot.clicked.connect(lambda: self._execute_and_display("phone screenshot"))
-        btn_row1.addWidget(btn_shot)
+        nav_actions = [
+            ("🏠 Home", "phone home"),
+            ("◀ Back", "phone back"),
+            ("📑 Recents", "phone recents"),
+            ("🔔 Notifications", "phone notifications"),
+            ("🔓 Unlock", "unlock phone"),
+            ("🔒 Lock", "lock phone"),
+            ("🔋 Battery", "phone battery"),
+            ("📸 Screenshot", "phone screenshot"),
+            ("🔊 Vol +", "phone volume up"),
+            ("🔉 Vol -", "phone volume down"),
+        ]
 
-        btn_lock = QPushButton("🔒 Lock Screen")
-        btn_lock.setProperty("class", "hudButton")
-        btn_lock.clicked.connect(lambda: self._execute_and_display("lock phone"))
-        btn_row1.addWidget(btn_lock)
+        for text, cmd in nav_actions:
+            b = QPushButton(text)
+            b.setProperty("class", "hudButton")
+            b.clicked.connect(lambda _, c=cmd: self._execute_and_display(c))
+            btn_nav.addWidget(b)
 
-        btn_vol_up = QPushButton("🔊 Vol +")
-        btn_vol_up.setProperty("class", "hudButton")
-        btn_vol_up.clicked.connect(lambda: self._execute_and_display("phone volume up"))
-        btn_row1.addWidget(btn_vol_up)
-
-        btn_vol_dn = QPushButton("🔉 Vol -")
-        btn_vol_dn.setProperty("class", "hudButton")
-        btn_vol_dn.clicked.connect(lambda: self._execute_and_display("phone volume down"))
-        btn_row1.addWidget(btn_vol_dn)
-
-        btn_row1.addStretch()
-        layout.addLayout(btn_row1)
+        btn_nav.addStretch()
+        layout.addLayout(btn_nav)
 
         # App Launch Row
-        btn_row2 = QHBoxLayout()
-        btn_row2.setSpacing(8)
+        btn_apps = QHBoxLayout()
+        btn_apps.setSpacing(8)
 
-        btn_yt = QPushButton("▶️ YouTube")
-        btn_yt.setProperty("class", "hudButton")
-        btn_yt.clicked.connect(lambda: self._execute_and_display("open on phone youtube"))
-        btn_row2.addWidget(btn_yt)
+        app_actions = [
+            ("▶️ YouTube", "open on phone youtube"),
+            ("💬 WhatsApp", "open on phone whatsapp"),
+            ("📷 Camera", "open on phone camera"),
+            ("📸 Instagram", "open on phone instagram"),
+            ("🌐 Chrome", "open on phone chrome"),
+            ("🎵 Spotify", "open on phone spotify"),
+            ("⚙️ Settings", "open on phone settings"),
+        ]
 
-        btn_wa = QPushButton("💬 WhatsApp")
-        btn_wa.setProperty("class", "hudButton")
-        btn_wa.clicked.connect(lambda: self._execute_and_display("open on phone whatsapp"))
-        btn_row2.addWidget(btn_wa)
+        for text, cmd in app_actions:
+            b = QPushButton(text)
+            b.setProperty("class", "hudButton")
+            b.clicked.connect(lambda _, c=cmd: self._execute_and_display(c))
+            btn_apps.addWidget(b)
 
-        btn_chrome = QPushButton("🌐 Chrome")
-        btn_chrome.setProperty("class", "hudButton")
-        btn_chrome.clicked.connect(lambda: self._execute_and_display("open on phone chrome"))
-        btn_row2.addWidget(btn_chrome)
-
-        btn_cam = QPushButton("📷 Camera")
-        btn_cam.setProperty("class", "hudButton")
-        btn_cam.clicked.connect(lambda: self._execute_and_display("open on phone camera"))
-        btn_row2.addWidget(btn_cam)
-
-        btn_settings = QPushButton("⚙️ Settings")
-        btn_settings.setProperty("class", "hudButton")
-        btn_settings.clicked.connect(lambda: self._execute_and_display("open on phone settings"))
-        btn_row2.addWidget(btn_settings)
-
-        btn_row2.addStretch()
-        layout.addLayout(btn_row2)
+        btn_apps.addStretch()
+        layout.addLayout(btn_apps)
 
         # Phone Feed Browser
         self.phone_browser = QTextBrowser()
         self.phone_browser.setObjectName("chatBrowser")
         self.phone_browser.setHtml(
             "<div style='color: #637b99; font-size: 13px;'>"
-            "NEXUS Android Bridge is ready. Connect your phone via USB with USB Debugging enabled, or enter your phone's Wi-Fi IP above to control wirelessly without cables!"
+            "NEXUS Android Bridge is ready. Connect your phone via USB with USB Debugging enabled, "
+            "or enter your phone's Wi-Fi IP above to control wirelessly without cables!"
             "</div>"
         )
         layout.addWidget(self.phone_browser, 1)

@@ -392,6 +392,102 @@ def execute_command(command_type, target=None):
         return phone.get_phone_info()
 
 
+    if command_type == "PHONE_MIRROR":
+
+        from android.phone_controller import phone
+        return phone.mirror_screen()
+
+
+    if command_type == "PHONE_UNLOCK":
+
+        from android.phone_controller import phone
+        return phone.unlock_phone()
+
+
+    if command_type == "PHONE_HOME":
+
+        from android.phone_controller import phone
+        return phone.press_home()
+
+
+    if command_type == "PHONE_BACK":
+
+        from android.phone_controller import phone
+        return phone.press_back()
+
+
+    if command_type == "PHONE_RECENTS":
+
+        from android.phone_controller import phone
+        return phone.press_recents()
+
+
+    if command_type == "PHONE_NOTIFICATIONS":
+
+        from android.phone_controller import phone
+        return phone.show_notifications()
+
+
+    if command_type == "PHONE_QUICK_SETTINGS":
+
+        from android.phone_controller import phone
+        return phone.show_quick_settings()
+
+
+    if command_type == "PHONE_MEDIA_PLAY_PAUSE":
+
+        from android.phone_controller import phone
+        return phone.media_play_pause()
+
+
+    if command_type == "PHONE_MEDIA_NEXT":
+
+        from android.phone_controller import phone
+        return phone.media_next()
+
+
+    if command_type == "PHONE_MEDIA_PREV":
+
+        from android.phone_controller import phone
+        return phone.media_prev()
+
+
+    if command_type == "PHONE_CONNECT":
+
+        from android.phone_controller import phone
+        return phone.connect_wireless(target or "")
+
+
+    if command_type == "PHONE_PAIR":
+
+        from android.phone_controller import phone
+        parts = str(target or "").strip().split()
+        if len(parts) >= 2:
+            return phone.pair_device(parts[0], parts[1])
+        return "Please specify device IP:port and pairing code, e.g. 'pair phone 192.168.1.5:43215 123456'."
+
+
+    if command_type == "PHONE_ENABLE_WIRELESS":
+
+        from android.phone_controller import phone
+        return phone.enable_wireless_port(5555)
+
+
+    if command_type == "PHONE_TYPE":
+
+        from android.phone_controller import phone
+        return phone.type_text(target or "")
+
+
+    if command_type == "PHONE_SMS":
+
+        from android.phone_controller import phone
+        parts = str(target or "").strip().split(" ", 1)
+        if len(parts) == 2:
+            return phone.send_sms(parts[0], parts[1])
+        return "Please specify phone number and message, e.g. 'phone sms 9876543210 Hello'."
+
+
     # --------------------------------------------------------
     # JARVIS SPECIALIZED COMMANDS (@dhaibuilds)
     # --------------------------------------------------------

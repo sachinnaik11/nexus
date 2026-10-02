@@ -33,7 +33,12 @@ def normalize_command(text):
             break
 
     command = re.sub(
-        r"[!?.,]+",
+        r"[!?,]+",
+        " ",
+        command
+    )
+    command = re.sub(
+        r"\.(?:\s|$)",
         " ",
         command
     )
@@ -431,6 +436,10 @@ def classify_command(text):
 
         return "TYPE_NOTEPAD"
 
+    if command.startswith("type on phone "):
+
+        return "PHONE_TYPE"
+
     if command.startswith("type "):
 
         return "TYPE"
@@ -721,6 +730,66 @@ def classify_command(text):
     if command in ("phone info", "phone status"):
         return "PHONE_STATUS"
 
+    if command in (
+        "control my mobile",
+        "control mobile",
+        "control my phone",
+        "control phone",
+        "mirror phone",
+        "mirror my phone",
+        "mirror mobile",
+        "phone screen",
+        "show phone screen",
+    ):
+        return "PHONE_MIRROR"
+
+    if command in (
+        "unlock phone",
+        "unlock my phone",
+        "wake phone",
+        "wake up phone",
+    ):
+        return "PHONE_UNLOCK"
+
+    if command in ("phone home", "go home on phone"):
+        return "PHONE_HOME"
+
+    if command in ("phone back", "back on phone"):
+        return "PHONE_BACK"
+
+    if command in ("phone recents", "phone recent apps", "phone app switcher"):
+        return "PHONE_RECENTS"
+
+    if command in ("phone notifications", "show phone notifications"):
+        return "PHONE_NOTIFICATIONS"
+
+    if command in ("phone quick settings", "open phone quick settings"):
+        return "PHONE_QUICK_SETTINGS"
+
+    if command in ("phone play", "phone pause", "phone play pause"):
+        return "PHONE_MEDIA_PLAY_PAUSE"
+
+    if command == "phone next":
+        return "PHONE_MEDIA_NEXT"
+
+    if command == "phone previous":
+        return "PHONE_MEDIA_PREV"
+
+    if command.startswith("connect phone") or command.startswith("connect mobile"):
+        return "PHONE_CONNECT"
+
+    if command.startswith("pair phone") or command.startswith("pair mobile"):
+        return "PHONE_PAIR"
+
+    if command in ("enable wireless phone", "wireless phone"):
+        return "PHONE_ENABLE_WIRELESS"
+
+    if command.startswith("type on phone "):
+        return "PHONE_TYPE"
+
+    if command.startswith("send sms ") or command.startswith("phone sms "):
+        return "PHONE_SMS"
+
     return None
 
 
@@ -793,6 +862,12 @@ def get_command_target(text):
             len("write in notepad "):
         ].strip()
 
+    if command.startswith("type on phone "):
+
+        return command[
+            len("type on phone "):
+        ].strip()
+
     if command.startswith("type "):
 
         return command[
@@ -854,6 +929,27 @@ def get_command_target(text):
 
     if command.startswith("close phone app "):
         return command[len("close phone app "):].strip()
+
+    if command.startswith("connect phone "):
+        return command[len("connect phone "):].strip()
+
+    if command.startswith("connect mobile "):
+        return command[len("connect mobile "):].strip()
+
+    if command.startswith("pair phone "):
+        return command[len("pair phone "):].strip()
+
+    if command.startswith("pair mobile "):
+        return command[len("pair mobile "):].strip()
+
+    if command.startswith("type on phone "):
+        return command[len("type on phone "):].strip()
+
+    if command.startswith("send sms "):
+        return command[len("send sms "):].strip()
+
+    if command.startswith("phone sms "):
+        return command[len("phone sms "):].strip()
 
     if command.startswith("close "):
 
