@@ -282,6 +282,18 @@ class PhoneController:
                     f"Ensure phone and PC are on the same Wi-Fi, check your phone's IP in Settings > About Phone > Status, "
                     f"and say: 'connect phone <your_ip>:5555'."
                 )
+        except subprocess.TimeoutExpired:
+            return (
+                f"[ROUTER BLOCKS WIRELESS PAIRED TRAFFIC]\n\n"
+                f"Your phone's Wi-Fi IP is: {phone_ip}\n\n"
+                f"Your home Wi-Fi router ('MBNL-post5g') has AP Client Isolation enabled, "
+                f"which prevents wireless devices on the network from talking directly to each other.\n\n"
+                f"HOW TO CONTROL YOUR PHONE:\n"
+                f"• Option 1 (Zero-Latency USB - Recommended): Keep the USB cable plugged in! "
+                f"Your Vivo V2420 is charging while giving you full 60 FPS live screen control.\n"
+                f"• Option 2 (Cable-Free via Hotspot): Turn ON Mobile Hotspot on your phone, "
+                f"connect your laptop to your phone's hotspot, then say 'enable wireless phone'!"
+            )
         except Exception as e:
             return f"Failed to enable wireless mode: {e}"
 
