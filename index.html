@@ -512,7 +512,7 @@
       <div class="status-badge">JARVIS 2.0</div>
     </div>
     <div class="top-tools">
-      <button class="hud-btn-mini" id="pwa-install-btn" style="display:none;">📲 Install</button>
+      <button class="hud-btn-mini" id="pwa-install-btn" style="display:none;" onclick="installPWA()">📲 Install</button>
       <button class="hud-btn-mini" onclick="toggleAudio()"><span id="sound-icon">🔊</span></button>
       <button class="hud-btn-mini" onclick="lockSystem()">🔒</button>
     </div>
@@ -653,6 +653,48 @@
   </div>
 
   <script>
+    // --------------------------------------------------------
+    // PWA SERVICE WORKER & 24/7 AUTO-UPDATE HANDLER
+    // --------------------------------------------------------
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then((reg) => {
+          reg.onupdatefound = () => {
+            const installing = reg.installing;
+            if (installing) {
+              installing.onstatechange = () => {
+                if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[SW] New version detected, reloading...');
+                  window.location.reload();
+                }
+              };
+            }
+          };
+        }).catch(err => console.log('[SW] Registration failed:', err));
+      });
+    }
+
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('pwa-install-btn');
+      if (installBtn) installBtn.style.display = 'inline-block';
+    });
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) installBtn.style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      }
+    }
+
     // --------------------------------------------------------
     // WEB AUDIO API SOUND GENERATOR
     // --------------------------------------------------------
@@ -804,6 +846,17 @@
       }
     }
 
+    async function getOrInitGeminiKey() {
+      let key = localStorage.getItem("nexus_gemini_key");
+      if (!key || !key.startsWith("AQ.")) {
+        key = await decryptGeminiKey("2026");
+        if (key && key.startsWith("AQ.")) {
+          localStorage.setItem("nexus_gemini_key", key);
+        }
+      }
+      return key;
+    }
+
     async function verifyPin() {
       const pin = document.getElementById('pin-input').value.trim();
       const err = document.getElementById('pin-error');
@@ -826,20 +879,23 @@
       document.getElementById('pin-input').value = '';
     }
 
-    if (localStorage.getItem("nexus_gemini_key")) {
-      document.getElementById('lock-modal').style.display = 'none';
-    }
+    // Auto-unlock 24/7 cloud brain on boot
+    (async function autoInitCloud() {
+      const key = await getOrInitGeminiKey();
+      if (key) {
+        const lockModal = document.getElementById('lock-modal');
+        if (lockModal) lockModal.style.display = 'none';
+      }
+    })();
 
     // --------------------------------------------------------
-    // AI CHAT & GEMINI CLOUD ENGINE
+    // AI CHAT & GEMINI CLOUD ENGINE (24/7 INDEPENDENT FROM LAPTOP)
     // --------------------------------------------------------
     async function callGemini(promptText, imageBase64 = null) {
-      const apiKey = localStorage.getItem("nexus_gemini_key");
-      if (!apiKey) throw new Error("Authentication required. Please enter PIN.");
+      let apiKey = await getOrInitGeminiKey();
+      if (!apiKey) throw new Error("Authentication required. Please enter PIN 2026.");
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
       const systemPrompt = "You are J.A.R.V.I.S., Tony Stark's elite AI assistant engineered for Sachin Naik. Speak sharp, articulate, and respectful ('boss'). Keep answers punchy. Think internally inside <think>...</think> tags.";
-
       const parts = [{ text: `${systemPrompt}\n\nUser: ${promptText}` }];
       if (imageBase64) {
         parts.push({
@@ -850,27 +906,40 @@
         });
       }
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: parts }] })
-      });
+      // Try gemini-3.8-flash first, fallback to gemini-3.5-flash-lite
+      const models = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+      let lastErr = null;
 
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error?.message || `HTTP ${res.status}`);
-      }
+      for (const model of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: parts }] })
+          });
 
-      const data = await res.json();
-      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
-      let thinking = "";
-      let response = raw;
-      const match = raw.match(/<think>([\s\S]*?)<\/think>/);
-      if (match) {
-        thinking = match[1].trim();
-        response = raw.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            lastErr = new Error(errJson.error?.message || `HTTP ${res.status}`);
+            continue;
+          }
+
+          const data = await res.json();
+          const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+          let thinking = "";
+          let response = raw;
+          const match = raw.match(/<think>([\s\S]*?)<\/think>/);
+          if (match) {
+            thinking = match[1].trim();
+            response = raw.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+          }
+          return { response, thinking };
+        } catch (e) {
+          lastErr = e;
+        }
       }
-      return { response, thinking };
+      throw lastErr || new Error("Failed to reach Gemini Cloud servers.");
     }
 
     function appendMessage(role, text, thinking = "") {
