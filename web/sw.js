@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nexus-brain-v3';
+const CACHE_NAME = 'nexus-jarvis-v6';
 const ASSETS = [
   './',
   './manifest.json',
@@ -7,10 +7,10 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -18,7 +18,10 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
+          if (key !== CACHE_NAME) {
+            console.log('[SW] Clearing old cache:', key);
+            return caches.delete(key);
+          }
         })
       )
     )
@@ -27,7 +30,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Pass API requests, Google Gemini API, and dynamic QR directly to network
+  // Always pass API requests and Gemini Google Cloud requests straight to network
   if (
     event.request.url.includes('/api/') ||
     event.request.url.includes('googleapis.com') ||
@@ -35,6 +38,24 @@ self.addEventListener('fetch', (event) => {
   ) {
     return;
   }
+
+  // Network-First for HTML navigation so phone always gets latest UI
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request).then((res) => res || caches.match('./')))
+    );
+    return;
+  }
+
+  // Cache-first with network fallback for static assets
   event.respondWith(
     caches.match(event.request).then((response) => response || fetch(event.request))
   );
