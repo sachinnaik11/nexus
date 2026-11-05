@@ -173,27 +173,38 @@ class JarvisCoreWidget(QWidget):
             painter.drawLine(int(x1), int(y1), int(x2), int(y2))
 
         # ----------------------------------------------------
-        # 3. ROTATING ARC SEGMENTS
+        # 3. 10 PALLADIUM / VIBRANIUM INDUCTION COILS & ROTATING ARCS
         # ----------------------------------------------------
-        r_arcs = radius * 0.78
-        pen_arc1 = QPen(base_color, 2.5)
-        painter.setPen(pen_arc1)
-        painter.drawArc(
-            int(cx - r_arcs), int(cy - r_arcs), int(r_arcs * 2), int(r_arcs * 2),
-            int(self.angle * 16), int(70 * 16)
-        )
-        painter.drawArc(
-            int(cx - r_arcs), int(cy - r_arcs), int(r_arcs * 2), int(r_arcs * 2),
-            int((self.angle + 120) * 16), int(70 * 16)
-        )
-        painter.drawArc(
-            int(cx - r_arcs), int(cy - r_arcs), int(r_arcs * 2), int(r_arcs * 2),
-            int((self.angle + 240) * 16), int(70 * 16)
-        )
+        r_coils = radius * 0.78
+        num_coils = 10
+        coil_w, coil_h = 10, 16
+        for c_idx in range(num_coils):
+            c_deg = (c_idx * (360 / num_coils) + self.angle) * math.pi / 180
+            cx_coil = cx + r_coils * math.cos(c_deg)
+            cy_coil = cy + r_coils * math.sin(c_deg)
 
-        # Counter-rotating inner ring
-        r_inner_arc = radius * 0.62
-        pen_arc2 = QPen(QColor(base_color.red(), base_color.green(), base_color.blue(), 180), 2.0)
+            painter.save()
+            painter.translate(cx_coil, cy_coil)
+            painter.rotate((c_idx * (360 / num_coils) + self.angle) + 90)
+
+            # Outer casing
+            painter.setBrush(QBrush(QColor(15, 23, 42, 220)))
+            painter.setPen(QPen(base_color, 1.5))
+            painter.drawRect(int(-coil_w / 2), int(-coil_h / 2), int(coil_w), int(coil_h))
+
+            # Copper coil winding
+            painter.fillRect(int(-coil_w / 2 + 2), int(-coil_h / 2 + 3), int(coil_w - 4), int(coil_h - 6), QColor(255, 170, 0, 200))
+
+            # Core LED Node
+            painter.setBrush(QBrush(base_color))
+            painter.setPen(Qt.NoPen)
+            painter.drawEllipse(-2, -2, 4, 4)
+
+            painter.restore()
+
+        # Counter-rotating inner turbine ring
+        r_inner_arc = radius * 0.58
+        pen_arc2 = QPen(QColor(base_color.red(), base_color.green(), base_color.blue(), 190), 2.0)
         painter.setPen(pen_arc2)
         counter_angle = (-self.angle * 1.5) % 360
         painter.drawArc(
