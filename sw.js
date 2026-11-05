@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nexus-jarvis-v6';
+const CACHE_NAME = 'nexus-jarvis-v7';
 const ASSETS = [
   './',
   './manifest.json',
